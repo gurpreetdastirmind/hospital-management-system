@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { LanguageContext } from '../App.jsx';
-import api from '../../api';
+import api from '../api';
 const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
     const { language, translations, changeLanguage } = useContext(LanguageContext);
     const [isSpeaking, setIsSpeaking] = useState(false);

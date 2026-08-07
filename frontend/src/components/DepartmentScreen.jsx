@@ -6,7 +6,7 @@ import childImg from '../image/child.png';
 import eyeImg from '../image/eye1.png';
 import generalImg from '../image/general.png';
 import womenImg from '../image/women.png';
-import api from '../../api';
+import api from '../api';
 const DepartmentScreen = ({ onNext, onBack, department }) => {
   const { language, translations, changeLanguage } = useContext(LanguageContext);
   const [selectedDepartment, setSelectedDepartment] = useState(department || null);
