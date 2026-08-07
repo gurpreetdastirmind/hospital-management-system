@@ -27,8 +27,8 @@ const allowedOrigins = [
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
   process.env.CORS_ORIGIN,
-  'https://hospital-frontend.onrender.com',
-  'https://hospital-backend.onrender.com'
+  'https://hospital-frontend-ts8w.onrender.com',
+  'https://hospital-backend-4nsj.onrender.com'
 ].filter(Boolean);
 
 app.use(cors({
