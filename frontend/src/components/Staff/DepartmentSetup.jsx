@@ -1,5 +1,7 @@
+// frontend/src/components/Staff/DepartmentSetup.jsx
 import React, { useState } from 'react';
 import api from '../../api';
+
 const DepartmentSetup = ({ departments, onUpdate }) => {
   const [editingDept, setEditingDept] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -14,14 +16,13 @@ const DepartmentSetup = ({ departments, onUpdate }) => {
 
   const handleToggleDepartment = async (id, currentStatus) => {
     try {
-      const response = await fetch(`/api/departments/${id}/toggle`, {
-        method: 'PATCH'
-      });
-      if (response.ok) {
+      const response = await api.patch(`/api/departments/${id}/toggle`);
+      if (response.status === 200) {
         onUpdate();
       }
     } catch (error) {
       console.error('Error toggling department:', error);
+      alert('Error toggling department status');
     }
   };
 
@@ -30,24 +31,23 @@ const DepartmentSetup = ({ departments, onUpdate }) => {
     setSaving(true);
     
     try {
-      const url = editingDept 
-        ? `/api/departments/${editingDept.id}`
-        : '/api/departments';
+      let response;
       
-      const method = editingDept ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      if (editingDept) {
+        // Update existing department
+        response = await api.put(`/api/departments/${editingDept.id}`, {
           ...formData,
-          isOpen: editingDept ? editingDept.is_open : 1
-        })
-      });
+          isOpen: editingDept.is_open
+        });
+      } else {
+        // Create new department
+        response = await api.post('/api/departments', {
+          ...formData,
+          isOpen: 1
+        });
+      }
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         onUpdate();
         setShowAddForm(false);
         setEditingDept(null);
@@ -56,7 +56,7 @@ const DepartmentSetup = ({ departments, onUpdate }) => {
       }
     } catch (error) {
       console.error('Error saving department:', error);
-      alert('Error saving department');
+      alert(error.response?.data?.message || 'Error saving department');
     } finally {
       setSaving(false);
     }
@@ -104,6 +104,7 @@ const DepartmentSetup = ({ departments, onUpdate }) => {
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   required
+                  placeholder="e.g., General Medicine"
                 />
               </div>
               <div className="form-group">

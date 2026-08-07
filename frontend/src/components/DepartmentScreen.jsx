@@ -1,3 +1,4 @@
+// frontend/src/components/DepartmentScreen.jsx
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { LanguageContext } from '../App.jsx';
 import boneImg from '../image/bones.png';
@@ -7,6 +8,7 @@ import eyeImg from '../image/eye1.png';
 import generalImg from '../image/general.png';
 import womenImg from '../image/women.png';
 import api from '../api';
+
 const DepartmentScreen = ({ onNext, onBack, department }) => {
   const { language, translations, changeLanguage } = useContext(LanguageContext);
   const [selectedDepartment, setSelectedDepartment] = useState(department || null);
@@ -143,7 +145,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     }
   };
 
-  // Check if patient already has a token in this department
+  // Check if patient already has a token in this department - FIXED with api
   const checkExistingTokenForDepartment = async (dept) => {
     setIsChecking(true);
     
@@ -155,20 +157,18 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
         return true; // No phone number, proceed
       }
       
-      // Check if patient has existing token
-      const response = await fetch(`/api/patients/phone/${phoneNumber}`);
-      const data = await response.json();
+      // Check if patient has existing token using api
+      const response = await api.get(`/api/patients/phone/${phoneNumber}`);
       
-      if (data.success && data.data) {
-        const patient = data.data;
+      if (response.data.success && response.data.data) {
+        const patient = response.data.data;
         
         if (patient.token) {
           // Check if token is active
-          const tokenResponse = await fetch(`/api/tokens`);
-          const tokensData = await tokenResponse.json();
+          const tokensResponse = await api.get('/api/tokens');
           
-          if (tokensData.success) {
-            const foundToken = tokensData.data.find(t => t.token_number === patient.token);
+          if (tokensResponse.data.success) {
+            const foundToken = tokensResponse.data.data.find(t => t.token_number === patient.token);
             
             if (foundToken) {
               const isToday = new Date(foundToken.created_at).toDateString() === new Date().toDateString();

@@ -1,8 +1,9 @@
-// frontend/src/components/staff/StaffLogin.jsx
+// frontend/src/components/Staff/StaffLogin.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/StaffLogin.css';
 import api from '../../api';
+
 const StaffLogin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -16,31 +17,26 @@ const StaffLogin = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/staff/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const response = await api.post('/api/staff/login', {
+        email,
+        password
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (response.data.success) {
         // Store session
         localStorage.setItem('staffLoggedIn', 'true');
         localStorage.setItem('staffEmail', email);
-        localStorage.setItem('staffName', data.data.name);
-        localStorage.setItem('staffRole', data.data.role);
+        localStorage.setItem('staffName', response.data.data.name);
+        localStorage.setItem('staffRole', response.data.data.role);
         
         // Redirect to dashboard
         navigate('/staff/dashboard');
       } else {
-        setError(data.error || 'Invalid credentials');
+        setError(response.data.error || 'Invalid credentials');
       }
     } catch (error) {
       console.error('Login error:', error);
-      setError('Connection error. Please try again.');
+      setError(error.response?.data?.error || 'Connection error. Please try again.');
     } finally {
       setLoading(false);
     }
