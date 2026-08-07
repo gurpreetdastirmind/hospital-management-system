@@ -1,6 +1,8 @@
+// frontend/src/components/TokenScreen.jsx
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { LanguageContext } from '../App.jsx';
 import api from '../api';
+
 const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
     const { language, translations, changeLanguage } = useContext(LanguageContext);
     const [isSpeaking, setIsSpeaking] = useState(false);
@@ -69,11 +71,10 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
     const checkTokenValidity = async () => {
         try {
             // First check if token exists in database
-            const response = await fetch(`/api/tokens`);
-            const data = await response.json();
+            const response = await api.get('/api/tokens');
             
-            if (data.success) {
-                const foundToken = data.data.find(t => t.token_number === token);
+            if (response.data.success) {
+                const foundToken = response.data.data.find(t => t.token_number === token);
                 
                 if (foundToken) {
                     const isToday = new Date(foundToken.created_at).toDateString() === new Date().toDateString();
@@ -113,12 +114,11 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
         }
 
         try {
-            const response = await fetch(`/api/tokens/department-status/${encodeURIComponent(departmentName)}`);
-            const data = await response.json();
+            const response = await api.get(`/api/tokens/department-status/${encodeURIComponent(departmentName)}`);
             
-            if (data.success && data.data) {
-                const waitingTokens = data.data.waitingTokens || [];
-                const currentCalled = data.data.currentCalled;
+            if (response.data.success && response.data.data) {
+                const waitingTokens = response.data.data.waitingTokens || [];
+                const currentCalled = response.data.data.currentCalled;
                 
                 // Check if this token is in waiting list or called
                 const tokenInWaiting = waitingTokens.find(t => t.token_number === token);
@@ -137,11 +137,10 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
                     position = index + 1;
                 } else {
                     // Check if token exists in database but not in waiting/called
-                    const allTokensResponse = await fetch(`/api/tokens`);
-                    const allTokensData = await allTokensResponse.json();
+                    const allTokensResponse = await api.get('/api/tokens');
                     
-                    if (allTokensData.success) {
-                        const foundToken = allTokensData.data.find(t => t.token_number === token);
+                    if (allTokensResponse.data.success) {
+                        const foundToken = allTokensResponse.data.data.find(t => t.token_number === token);
                         if (foundToken) {
                             if (foundToken.status === 'completed' || foundToken.status === 'missed') {
                                 setIsTokenExpired(true);
@@ -355,17 +354,9 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
                 roomNumber: room
             };
 
-            const response = await fetch('/api/patients/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(saveData),
-            });
-
-            const data = await response.json();
+            const response = await api.post('/api/patients/save', saveData);
             
-            if (response.ok) {
+            if (response.data.success) {
                 setHasCompleted(true);
                 speakText(translations.registrationComplete);
                 
@@ -397,7 +388,7 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
                 }
                 alert(message);
             } else {
-                alert('❌ Error saving: ' + (data.error || 'Unknown error'));
+                alert('❌ Error saving: ' + (response.data.error || 'Unknown error'));
             }
         } catch (error) {
             console.error('❌ Error saving patient:', error);

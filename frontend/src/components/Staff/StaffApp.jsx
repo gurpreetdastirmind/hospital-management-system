@@ -1,4 +1,4 @@
-// frontend/src/components/staff/StaffApp.jsx
+// frontend/src/components/Staff/StaffApp.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LiveQueue from './LiveQueue';
@@ -6,13 +6,12 @@ import TokenRecords from './TokenRecords';
 import DepartmentSetup from './DepartmentSetup';
 import '../../styles/StaffApp.css';
 import api from '../../api';
+
 const StaffApp = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('queue');
   const [departments, setDepartments] = useState([]);
   const [tokens, setTokens] = useState([]);
-
-
 
   // Check if logged in
   useEffect(() => {
@@ -24,10 +23,9 @@ const StaffApp = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await fetch(`/api/departments`);
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
+      const response = await api.get('/api/departments');
+      if (response.data.success) {
+        setDepartments(response.data.data);
       }
     } catch (error) {
       console.error('Error fetching departments:', error);
@@ -36,10 +34,9 @@ const StaffApp = () => {
 
   const fetchTokens = async () => {
     try {
-      const response = await fetch(`/api/tokens`);
-      const data = await response.json();
-      if (data.success) {
-        setTokens(data.data);
+      const response = await api.get('/api/tokens');
+      if (response.data.success) {
+        setTokens(response.data.data);
       }
     } catch (error) {
       console.error('Error fetching tokens:', error);

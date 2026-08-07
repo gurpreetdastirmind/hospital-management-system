@@ -1,5 +1,7 @@
+// frontend/src/components/Staff/LiveQueue.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../../api';
+
 const LiveQueue = ({ tokens, departments, onRefresh }) => {
   const [showGenerateForm, setShowGenerateForm] = useState(false);
   const [newToken, setNewToken] = useState({
@@ -61,26 +63,19 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
 
     setGenerating(true);
     try {
-      const response = await fetch('/api/tokens/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...newToken,
-          source: 'Counter',
-          age: newToken.age || null
-        }),
+      const response = await api.post('/api/tokens/generate', {
+        ...newToken,
+        source: 'Counter',
+        age: newToken.age || null
       });
 
-      const data = await response.json();
-      if (data.success) {
-        alert(`✅ Token ${data.data.token_number} generated successfully!`);
+      if (response.data.success) {
+        alert(`✅ Token ${response.data.data.token_number} generated successfully!`);
         setNewToken({ name: '', phoneNumber: '', age: '', department: '' });
         setShowGenerateForm(false);
         onRefresh();
       } else {
-        alert(data.error || 'Failed to generate token');
+        alert(response.data.error || 'Failed to generate token');
       }
     } catch (error) {
       console.error('Error generating token:', error);
@@ -95,25 +90,17 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
     
     setCallingDepartment(department);
     try {
-      const response = await fetch('/api/tokens/call-next', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ department })
-      });
+      const response = await api.post('/api/tokens/call-next', { department });
 
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
-        if (data.data) {
-          alert(`📢 Called ${data.data.token_number} - ${data.data.patient_name} from ${department}`);
+      if (response.data.success) {
+        if (response.data.data) {
+          alert(`📢 Called ${response.data.data.token_number} - ${response.data.data.patient_name} from ${department}`);
         } else {
           alert(`ℹ️ No waiting tokens for ${department}`);
         }
         onRefresh();
       } else {
-        alert(data.error || 'Error calling next token');
+        alert(response.data.error || 'Error calling next token');
       }
     } catch (error) {
       console.error('Error calling token:', error);
