@@ -17,10 +17,17 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-        },
-      },
+        // Fix: manualChunks should be a function, not an object
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            // Split vendor chunks for better caching
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor-react';
+            }
+            return 'vendor';
+          }
+        }
+      }
     },
   },
   // Important: This ensures env variables are available
