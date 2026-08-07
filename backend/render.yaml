@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: hospital-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGIN
+        value: https://hospital-frontend.onrender.com
+      - key: DB_PATH
+        value: ./database/patients.db
