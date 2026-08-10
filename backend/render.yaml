@@ -12,3 +12,5 @@ services:
         value: 10000
       - key: CORS_ORIGIN
         value: https://hospital-frontend-ts8w.onrender.com
+      - key: DB_PATH
+        value: ./database/patients.db

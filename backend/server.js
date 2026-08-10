@@ -8,10 +8,7 @@ require('dotenv').config();
 const patientRoutes = require('./routes/patients');
 const departmentRoutes = require('./routes/departments');
 const tokenRoutes = require('./routes/tokens');
-
-// 👇 CHANGE 1: CHANGE THIS IMPORT TO THE NEW DATABASE.JS
-const connectDB = require('./database'); 
-
+const { initDatabase } = require('./database');
 const staffRoutes = require('./routes/staff');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -54,10 +51,8 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 👇 CHANGE 2: DELETE initDatabase() AND REPLACE WITH connectDB()
-// REMOVE: const { initDatabase } = require('./database');
-// REMOVE: initDatabase();
-connectDB();
+// Initialize database
+initDatabase();
 
 // Routes
 app.use('/api/patients', patientRoutes);
@@ -111,9 +106,8 @@ app.use(errorHandler);
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server is running on port ${PORT}`);
-
-  // 👇 CHANGE 3: UPDATE THESE CONSOLE LOGS TO SHOW MONGODB INSTEAD OF SQLITE
-  console.log(`📊 Database: MongoDB Atlas`);
+  console.log(`📊 Database: SQLite3`);
+  console.log(`📁 Database file: ./database/patients.db`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
   console.log(`✅ CORS enabled for: ${allowedOrigins.join(', ')}`);
   console.log(`📋 Available endpoints:`);
