@@ -1,5 +1,6 @@
 const Token = require('../models/Token');
 const Department = require('../models/Department');
+const Patient = require('../models/Patient'); // ⭐️ ADDED THIS IMPORT
 
 const generateTokenNumber = async (department) => {
   const today = new Date();
@@ -50,6 +51,7 @@ const checkAndAutoComplete = async () => {
   return expiredTokens.length;
 };
 
+// ⭐️ UPDATED generateToken FUNCTION
 const generateToken = async (req, res, next) => {
   try {
     const { name, phoneNumber, age, department, source = 'App' } = req.body;
@@ -64,12 +66,43 @@ const generateToken = async (req, res, next) => {
     const tokenNumber = await generateTokenNumber(department);
     const roomNumber = departmentInfo.room || `Room ${Math.floor(Math.random() * 20) + 1}`;
 
+    // 1. Create the Token
     const newToken = new Token({
       token_number: tokenNumber, patient_name: name, phone_number: phoneNumber,
       age: age || null, department, room_number: roomNumber, source
     });
     await newToken.save();
 
+    // ⭐️ 2. SAVE PATIENT DATA TO THE PATIENTS COLLECTION
+    let patient = await Patient.findOne({ phoneNumber });
+    
+    if (patient) {
+      // Update existing patient with new token info
+      patient.name = name;
+      patient.age = age || null;
+      patient.department = department;
+      patient.departmentName = department;
+      patient.token = tokenNumber;
+      patient.roomNumber = roomNumber;
+      await patient.save();
+      console.log(`🔄 Updated existing patient ${phoneNumber} with new token ${tokenNumber}`);
+    } else {
+      // Create new patient
+      const newPatient = new Patient({
+        phoneNumber, 
+        name, 
+        age: age || null, 
+        department: department, 
+        departmentName: department,
+        token: tokenNumber, 
+        roomNumber: roomNumber, 
+        language: 'EN'
+      });
+      await newPatient.save();
+      console.log(`✅ Created new patient ${phoneNumber} with token ${tokenNumber}`);
+    }
+
+    // 3. Check if it's the first token and call it
     const waitingCount = await Token.countDocuments({ department, status: 'waiting' });
     if (waitingCount === 1) {
       newToken.status = 'called';
@@ -78,7 +111,10 @@ const generateToken = async (req, res, next) => {
     }
 
     res.status(201).json({ success: true, message: 'Token generated', data: newToken });
-  } catch (error) { next(error); }
+  } catch (error) { 
+    console.error('Error generating token:', error);
+    next(error); 
+  }
 };
 
 const getTokenByIdRoute = async (req, res, next) => {
