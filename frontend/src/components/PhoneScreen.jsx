@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef, useContext } from 'react'; // Added useRef
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { LanguageContext } from '../App.jsx';
+import api from '../api'; // Make sure to import api
 
-const PhoneScreen = ({ onNext, onBack, phoneNumber }) => {
+const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
   const { language, translations, changeLanguage } = useContext(LanguageContext);
   const [phone, setPhone] = useState(phoneNumber || '');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const inputRef = useRef(null);
   const speechTimeoutRef = useRef(null);
 
@@ -14,12 +16,10 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber }) => {
   };
 
   useEffect(() => {
-    // Clear any pending timeouts
     if (speechTimeoutRef.current) {
       clearTimeout(speechTimeoutRef.current);
     }
     
-    // Cancel any ongoing speech
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
@@ -44,7 +44,6 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber }) => {
 
   const speakText = (text) => {
     if ('speechSynthesis' in window) {
-      // Cancel any ongoing speech FIRST
       window.speechSynthesis.cancel();
       
       setTimeout(() => {
@@ -80,12 +79,136 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber }) => {
     }
   };
 
-  const handleNext = () => {
-    if (phone.length === 10) {
-      onNext({ phoneNumber: phone });
-    } else {
-      alert(translations.pleaseEnterPhone);
+  // NEW: Check if phone exists in database
+  const checkExistingPatient = async (phoneNumber) => {
+    setIsChecking(true);
+    
+    try {
+      console.log(`🔍 Checking phone number: ${phoneNumber}`);
+      
+      const response = await api.get(`/api/patients/phone/${phoneNumber}`);
+      
+      if (response.data.success && response.data.data) {
+        const patient = response.data.data;
+        console.log('✅ Found existing patient:', patient);
+        
+        // Check if patient has an active token
+        if (patient.token) {
+          // Check if token is still active (waiting or called)
+          const tokensResponse = await api.get('/api/tokens');
+          
+          if (tokensResponse.data.success) {
+            const foundToken = tokensResponse.data.data.find(t => t.token_number === patient.token);
+            
+            if (foundToken) {
+              const isToday = new Date(foundToken.created_at).toDateString() === new Date().toDateString();
+              const isActive = foundToken.status === 'waiting' || foundToken.status === 'called';
+              
+              if (isActive && isToday) {
+                // Token is active - show token screen
+                console.log('🎫 Active token found:', patient.token);
+                
+                // Get department name
+                let deptName = patient.department || patient.department_name || 'General';
+                
+                // Show alert with token info
+                alert(`✅ Welcome back!\n\nYou already have an active token:\nToken: ${patient.token}\nDepartment: ${deptName}\nRoom: ${patient.room_number || 'N/A'}\nStatus: ${foundToken.status.toUpperCase()}\n\nWe'll take you to your token now.`);
+                
+                // Navigate directly to token screen with existing data
+                onTokenFound({
+                  token: patient.token,
+                  room: patient.room_number || Math.floor(Math.random() * 20) + 1,
+                  departmentName: deptName,
+                  isExistingPatient: true,
+                  tokenStatus: foundToken.status,
+                  positionInQueue: 0 // Will be calculated in TokenScreen
+                });
+                
+                return true; // Found active token
+              } else {
+                console.log('⏰ Token expired or completed:', foundToken.status);
+                // Token exists but is expired/completed - ask user what to do
+                const wantsNew = window.confirm(
+                  `You had a token (${patient.token}) but it's already ${foundToken.status}.\n\nWould you like to register for a new token?`
+                );
+                
+                if (wantsNew) {
+                  // User wants new token - proceed to next screen
+                  return false;
+                } else {
+                  // User doesn't want new token - go back
+                  return true; // Stop further processing
+                }
+              }
+            }
+          }
+        }
+        
+        // No active token found - ask if they want to register
+        const wantsRegister = window.confirm(
+          `Welcome back ${patient.name || 'Patient'}!\n\nYour phone number is already registered.\nWould you like to register for a new token?`
+        );
+        
+        if (wantsRegister) {
+          // User wants to register new token
+          return false; // Proceed to next screen
+        } else {
+          // User doesn't want to register
+          return true; // Stop
+        }
+      }
+      
+      // No patient found - continue to registration
+      return false;
+      
+    } catch (error) {
+      console.error('Error checking patient:', error);
+      // If patient not found (404), continue to registration
+      if (error.response?.status === 404) {
+        console.log('📝 New patient - proceeding to registration');
+        return false;
+      }
+      // For other errors, ask user if they want to continue
+      const continueAnyway = window.confirm(
+        'Could not check existing records. Would you like to continue with registration?'
+      );
+      return !continueAnyway;
+    } finally {
+      setIsChecking(false);
     }
+  };
+
+  const handleNext = async () => {
+    if (phone.length !== 10) {
+      alert(translations.pleaseEnterPhone);
+      return;
+    }
+
+    // Save phone to localStorage first
+    const patientData = JSON.parse(localStorage.getItem('patientData') || '{}');
+    localStorage.setItem('patientData', JSON.stringify({
+      ...patientData,
+      phoneNumber: phone
+    }));
+
+    // Check if patient already exists
+    const shouldStop = await checkExistingPatient(phone);
+    
+    if (!shouldStop) {
+      // No active token found - proceed to next screen (Name)
+      onNext({ phoneNumber: phone });
+    }
+    // If shouldStop is true, we either showed token or user cancelled
+  };
+
+  // NEW: Handle "Check Token" button click
+  const handleCheckToken = async () => {
+    if (phone.length !== 10) {
+      alert('Please enter a valid 10-digit phone number');
+      return;
+    }
+    
+    await checkExistingPatient(phone);
   };
 
   const formatPhoneNumber = (value) => {
@@ -101,19 +224,16 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber }) => {
     }
   };
 
-  // Toggle language function
   const toggleLanguage = () => {
-    // Cancel any ongoing speech immediately
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
     
     const newLang = language === 'EN' ? 'HI' : 'EN';
+    const langName = newLang === 'EN' ? translations.english : translations.hindi;
     
-    // Change language first
     changeLanguage(newLang);
     
-    // Then speak in the new language after a short delay
     setTimeout(() => {
       speakText(`${translations.youSelected} ${langName}.`);
     }, 200);
@@ -165,6 +285,28 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber }) => {
           </div>
         </div>
 
+        {/* NEW: Check Token Button */}
+        <div className="phone-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
+          <button 
+            className="check-token-btn"
+            onClick={handleCheckToken}
+            disabled={phone.length !== 10 || isChecking}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#FF9800',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: phone.length === 10 ? 'pointer' : 'not-allowed',
+              opacity: phone.length === 10 ? 1 : 0.5
+            }}
+          >
+            {isChecking ? '⏳ Checking...' : '🔍 Check Existing Token'}
+          </button>
+        </div>
+
         <div className="navigation">
           <button 
             className="nav-btn back-btn"
@@ -175,9 +317,9 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber }) => {
           <button 
             className="nav-btn next-btn"
             onClick={handleNext}
-            disabled={phone.length !== 10}
+            disabled={phone.length !== 10 || isChecking}
           >
-            {translations.next}
+            {isChecking ? '⏳ Checking...' : translations.next}
           </button>
         </div>
       </div>
