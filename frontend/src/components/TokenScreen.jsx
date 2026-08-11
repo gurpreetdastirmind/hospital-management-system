@@ -404,7 +404,6 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
         }
 
         const newLang = language === 'EN' ? 'HI' : 'EN';
-        const langName = newLang === 'EN' ? translations.english : translations.hindi;
 
         changeLanguage(newLang);
 

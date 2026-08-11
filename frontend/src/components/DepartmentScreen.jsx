@@ -276,7 +276,6 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     }
     
     const newLang = language === 'EN' ? 'HI' : 'EN';
-    const langName = newLang === 'EN' ? translations.english : translations.hindi;
     
     changeLanguage(newLang);
     

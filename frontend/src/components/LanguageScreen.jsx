@@ -107,7 +107,6 @@ const LanguageScreen = ({ onNext, onBack, selectedLanguage }) => {
     }
     
     const newLang = language === 'EN' ? 'HI' : 'EN';
-    const langName = newLang === 'EN' ? translations.english : translations.hindi;
     
     // Change language first
     changeLanguage(newLang);

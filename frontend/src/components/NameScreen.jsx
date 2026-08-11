@@ -168,7 +168,6 @@ const NameScreen = ({ onNext, onBack, name }) => {
     }
     
     const newLang = language === 'EN' ? 'HI' : 'EN';
-    const langName = newLang === 'EN' ? translations.english : translations.hindi;
     
     changeLanguage(newLang);
     
