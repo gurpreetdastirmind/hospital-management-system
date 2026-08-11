@@ -189,6 +189,21 @@
   line-height: 1;
 }
 
+/* FIX: When icon is before input, use adjacent sibling selector (+) */
+.input-icon + input {
+  width: 100%;
+  padding: 16px 18px 16px 48px;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background: #f9fafb;
+  color: #111827;
+  position: relative;
+  z-index: 1;
+}
+
 .input-wrapper input {
   width: 100%;
   padding: 16px 18px 16px 48px;
@@ -221,13 +236,19 @@
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
 }
 
-.input-wrapper input:focus ~ .input-icon,
+/* FIX: Use adjacent sibling to target icon when input is focused */
+.input-wrapper input:focus + .input-icon {
+  opacity: 0.8;
+  color: #667eea;
+}
+
+/* Also handle case where icon is before input */
 .input-wrapper:focus-within .input-icon {
   opacity: 0.8;
   color: #667eea;
 }
 
-/* Password toggle visibility (optional) */
+/* Password toggle visibility */
 .password-toggle {
   position: absolute;
   right: 16px;
@@ -333,6 +354,29 @@
   transform: translateX(-3px);
 }
 
+/* Weather info display - Add this if you want weather in footer */
+.weather-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.weather-info .weather-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.weather-info .divider {
+  color: #d1d5db;
+}
+
 /* Responsive improvements */
 @media (max-width: 480px) {
   .staff-login-card {
@@ -435,5 +479,14 @@
     background: rgba(220, 38, 38, 0.12);
     color: #f87171;
     border-color: rgba(220, 38, 38, 0.2);
+  }
+  
+  .weather-info {
+    border-top-color: #374151;
+    color: #9ca3af;
+  }
+  
+  .weather-info .divider {
+    color: #374151;
   }
 }
