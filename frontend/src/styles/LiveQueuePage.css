@@ -2,16 +2,64 @@
 
 .live-queue-page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: #f0f2f5;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===== STATUS BAR ===== */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 24px;
+  background: #1a1a2e;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 500;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-time {
+  font-weight: 600;
+  color: white;
+}
+
+.status-date {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.status-weather {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.status-lang {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  letter-spacing: 0.5px;
 }
 
 /* ===== HOSPITAL HEADER ===== */
 .hospital-header {
-  background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
   color: white;
-  padding: 24px 32px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  padding: 20px 24px 24px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.hospital-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.1), transparent 70%);
+  border-radius: 50%;
 }
 
 .hospital-header-top {
@@ -19,6 +67,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .hospital-brand {
@@ -27,8 +77,19 @@
   gap: 16px;
 }
 
+.hospital-icon-container {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
 .hospital-icon {
-  font-size: 48px;
+  font-size: 32px;
   animation: pulseIcon 3s ease-in-out infinite;
 }
 
@@ -37,128 +98,183 @@
   50% { transform: scale(1.05); }
 }
 
-.hospital-brand h1 {
-  font-size: 28px;
+.hospital-title h1 {
+  font-size: 24px;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #fff 0%, #a8b5e6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .hospital-tagline {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
   margin: 0;
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.6);
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
 }
 
 .header-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
 }
 
 .back-btn {
-  padding: 10px 24px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
   color: white;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
 }
 
-/* ===== HOSPITAL INFO BANNER ===== */
-.hospital-info-banner {
+/* ===== HOSPITAL INFO CARDS ===== */
+.hospital-info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 16px 20px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
   margin-bottom: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 1;
 }
 
-.info-item {
+.info-card {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s ease;
+  cursor: default;
 }
 
-.info-icon {
-  font-size: 24px;
+.info-card.emergency-card,
+.info-card.ambulance-card {
+  cursor: pointer;
 }
 
-.info-label {
-  font-size: 11px;
+.info-card.emergency-card:hover,
+.info-card.ambulance-card:hover {
+  background: rgba(255, 107, 107, 0.15);
+  border-color: rgba(255, 107, 107, 0.3);
+  transform: translateY(-2px);
+}
+
+.info-card-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.info-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.info-card-label {
+  font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.8px;
+  color: rgba(255, 255, 255, 0.4);
   display: block;
 }
 
-.info-value {
+.info-card-value {
   font-size: 14px;
   font-weight: 600;
   display: block;
+  margin: 2px 0;
 }
 
-.info-value.emergency-number {
+.info-card-value.emergency {
   color: #ff6b6b;
   font-size: 16px;
 }
 
-.info-value.available {
+.info-card-value.available {
   color: #51cf66;
 }
 
-.info-divider {
-  width: 1px;
-  background: rgba(255, 255, 255, 0.1);
+.info-card-sub {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.info-card-action {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  animation: pulseCall 2s ease-in-out infinite;
+}
+
+@keyframes pulseCall {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
 }
 
 /* ===== EMERGENCY SERVICES ===== */
 .emergency-services {
-  background: rgba(255, 107, 107, 0.1);
+  background: rgba(255, 107, 107, 0.08);
   border-radius: 12px;
-  padding: 16px 20px;
-  border: 1px solid rgba(255, 107, 107, 0.2);
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 107, 107, 0.12);
+  position: relative;
+  z-index: 1;
+}
+
+.emergency-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.emergency-icon {
+  font-size: 18px;
 }
 
 .emergency-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  margin-bottom: 10px;
   color: #ff6b6b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .emergency-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .emergency-tag {
-  padding: 4px 12px;
-  background: rgba(255, 255, 255, 0.1);
+  padding: 3px 12px;
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 20px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s ease;
+}
+
+.emergency-tag:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ===== QUEUE SECTION ===== */
 .queue-section {
-  padding: 24px 32px;
+  padding: 20px 24px 32px;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -167,27 +283,45 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
   gap: 12px;
 }
 
-.queue-section-header h2 {
-  font-size: 24px;
+.queue-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.queue-title h2 {
+  font-size: 22px;
   color: #1a2332;
   margin: 0;
 }
 
+.live-indicator {
+  font-size: 12px;
+  color: #4CAF50;
+  font-weight: 600;
+  animation: pulseLive 2s ease-in-out infinite;
+}
+
+@keyframes pulseLive {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .queue-stats {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .stat-badge {
-  padding: 6px 16px;
+  padding: 4px 14px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -217,16 +351,16 @@
 .department-filter {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 6px;
+  margin-bottom: 20px;
 }
 
 .filter-btn {
-  padding: 8px 20px;
+  padding: 6px 16px;
   border: 2px solid #e8ecf0;
   border-radius: 20px;
   background: white;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -246,14 +380,14 @@
 /* ===== DEPARTMENT CARDS ===== */
 .department-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
 }
 
 .dept-card {
   background: white;
   border-radius: 16px;
-  padding: 20px;
+  padding: 18px;
   border-left: 4px solid #667eea;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
@@ -268,35 +402,43 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .dept-card-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.dept-icon-large {
-  font-size: 32px;
+.dept-icon-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
 .dept-card-info h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   color: #1a2332;
 }
 
 .dept-room {
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7a8f;
 }
 
 .dept-status {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 12px;
+  white-space: nowrap;
 }
 
 .dept-status.open {
@@ -313,7 +455,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: 10px 0;
   border-top: 1px solid #f0f4f8;
   border-bottom: 1px solid #f0f4f8;
 }
@@ -323,14 +465,14 @@
 }
 
 .waiting-number {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: #1a2332;
   display: block;
 }
 
 .waiting-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7a8f;
 }
 
@@ -339,19 +481,30 @@
 }
 
 .current-token-label {
-  font-size: 11px;
+  font-size: 10px;
   color: #6b7a8f;
   display: block;
 }
 
 .current-token-number {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   display: block;
 }
 
+.token-status-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7a8f;
+  background: #f0f4f8;
+  padding: 2px 10px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-top: 2px;
+}
+
 .no-token {
-  font-size: 13px;
+  font-size: 12px;
   color: #b0b0b0;
 }
 
@@ -359,113 +512,201 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 12px;
-  font-size: 12px;
+  margin-top: 10px;
+  font-size: 10px;
   color: #6b7a8f;
 }
 
-.token-status {
-  font-weight: 600;
-  padding: 4px 12px;
-  background: #f0f4f8;
-  border-radius: 12px;
+.dept-updated {
+  color: #b0b0b0;
 }
 
 /* ===== LOADING & EMPTY STATES ===== */
 .loading-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 40px 20px;
   color: #6b7a8f;
-  font-size: 18px;
+  grid-column: 1 / -1;
+}
+
+.loading-spinner {
+  font-size: 40px;
+  display: block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 40px 20px;
   color: #6b7a8f;
-  font-size: 18px;
+  grid-column: 1 / -1;
 }
 
-/* ===== HOSPITAL FOOTER ===== */
-.hospital-footer {
-  background: #1a2332;
-  color: rgba(255, 255, 255, 0.7);
-  padding: 40px 32px 20px;
-  margin-top: 32px;
+.empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 8px;
 }
 
-.footer-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 32px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.footer-section h4 {
-  color: white;
-  font-size: 16px;
-  margin-bottom: 12px;
-}
-
-.footer-section p {
-  margin: 6px 0;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.emergency-contact {
-  color: #ff6b6b;
-  font-weight: 600;
-}
-
-.ambulance-contact {
-  color: #ffa94d;
-  font-weight: 600;
-}
-
-.footer-bottom {
-  text-align: center;
-  padding-top: 20px;
-  margin-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
+.empty-sub {
+  font-size: 12px;
+  color: #b0b0b0;
 }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
-  .hospital-info-banner {
+  .hospital-info-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .info-divider {
-    display: none;
   }
 }
 
 @media (max-width: 768px) {
+  .status-bar {
+    padding: 6px 16px;
+    font-size: 10px;
+  }
+  
   .hospital-header {
-    padding: 16px 20px;
+    padding: 16px;
   }
   
   .hospital-header-top {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
   }
   
-  .hospital-brand h1 {
-    font-size: 22px;
+  .hospital-title h1 {
+    font-size: 20px;
   }
   
-  .hospital-info-banner {
-    grid-template-columns: 1fr;
+  .hospital-icon-container {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .hospital-icon {
+    font-size: 24px;
+  }
+  
+  .hospital-info-grid {
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
   
+  .info-card {
+    padding: 10px 12px;
+  }
+  
+  .info-card-value {
+    font-size: 12px;
+  }
+  
   .queue-section {
-    padding: 16px 20px;
+    padding: 16px;
+  }
+  
+  .queue-title h2 {
+    font-size: 18px;
+  }
+  
+  .queue-stats {
+    gap: 4px;
+  }
+  
+  .stat-badge {
+    font-size: 10px;
+    padding: 3px 10px;
+  }
+  
+  .department-cards-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  
+  .dept-card {
+    padding: 14px;
+  }
+  
+  .waiting-number {
+    font-size: 24px;
+  }
+  
+  .current-token-number {
+    font-size: 20px;
+  }
+  
+  .back-btn {
+    font-size: 12px;
+    padding: 6px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-bar {
+    padding: 4px 12px;
+    font-size: 9px;
+    flex-wrap: wrap;
+  }
+  
+  .hospital-header {
+    padding: 12px;
+  }
+  
+  .hospital-brand {
+    flex-direction: row;
+  }
+  
+  .hospital-icon-container {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .hospital-icon {
+    font-size: 20px;
+  }
+  
+  .hospital-title h1 {
+    font-size: 16px;
+  }
+  
+  .hospital-tagline {
+    font-size: 10px;
+  }
+  
+  .hospital-info-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .info-card {
+    padding: 8px 12px;
+  }
+  
+  .info-card-value {
+    font-size: 13px;
+  }
+  
+  .info-card-value.emergency {
+    font-size: 14px;
+  }
+  
+  .emergency-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .emergency-tag {
+    font-size: 10px;
+  }
+  
+  .queue-section {
+    padding: 12px;
   }
   
   .queue-section-header {
@@ -474,55 +715,62 @@
   }
   
   .department-cards-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
   
-  .footer-content {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .hospital-header {
-    padding: 12px 16px;
+  .dept-card {
+    padding: 12px;
   }
   
-  .hospital-brand {
+  .dept-card-header {
     flex-direction: column;
+    gap: 6px;
+  }
+  
+  .dept-card-body {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .dept-current-token {
+    width: 100%;
+    border-top: 1px solid #f0f4f8;
+    padding-top: 8px;
+  }
+  
+  .dept-card-footer {
+    flex-direction: column;
+    gap: 2px;
     align-items: flex-start;
-  }
-  
-  .hospital-icon {
-    font-size: 36px;
-  }
-  
-  .hospital-brand h1 {
-    font-size: 18px;
-  }
-  
-  .emergency-grid {
-    flex-direction: column;
-  }
-  
-  .department-cards-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .queue-stats {
-    flex-wrap: wrap;
-  }
-  
-  .stat-badge {
-    font-size: 11px;
-    padding: 4px 12px;
-  }
-  
-  .footer-content {
-    grid-template-columns: 1fr;
   }
   
   .back-btn {
     width: 100%;
     text-align: center;
+  }
+  
+  .filter-btn {
+    font-size: 11px;
+    padding: 4px 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .hospital-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-card-value {
+    font-size: 12px;
+  }
+  
+  .queue-title h2 {
+    font-size: 16px;
+  }
+  
+  .stat-badge {
+    font-size: 9px;
+    padding: 2px 8px;
   }
 }
