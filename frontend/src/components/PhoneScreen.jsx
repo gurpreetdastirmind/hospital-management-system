@@ -152,10 +152,12 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
       
     } catch (error) {
       console.error('Error checking patient:', error);
+      // If patient not found (404), continue to registration
       if (error.response?.status === 404) {
         console.log('📝 New patient - proceeding to registration');
         return false;
       }
+      // For other errors, ask user if they want to continue
       const continueAnyway = window.confirm(
         'Could not check existing records. Would you like to continue with registration?'
       );
@@ -165,7 +167,7 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
     }
   };
 
-  // Generate Quick Token for General Medicine
+  // Generate Quick Token for General Medicine - FIXED
   const handleGenerateQuickToken = async () => {
     if (phone.length !== 10) {
       alert('Please enter a valid 10-digit phone number');
@@ -175,84 +177,116 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
     setIsGeneratingQuickToken(true);
 
     try {
-      // Get patient name from localStorage or use default
+      // Get patient data from localStorage
       const patientData = JSON.parse(localStorage.getItem('patientData') || '{}');
-      const patientName = patientData.name || 'Patient';
-
-      // Check if patient already has a token
-      const checkResponse = await api.get(`/api/patients/phone/${phone}`);
       
-      if (checkResponse.data.success && checkResponse.data.data) {
-        const patient = checkResponse.data.data;
-        if (patient.token) {
-          const tokensResponse = await api.get('/api/tokens');
-          if (tokensResponse.data.success) {
-            const foundToken = tokensResponse.data.data.find(t => t.token_number === patient.token);
-            if (foundToken) {
-              const isToday = new Date(foundToken.created_at).toDateString() === new Date().toDateString();
-              const isActive = foundToken.status === 'waiting' || foundToken.status === 'called';
-              
-              if (isActive && isToday) {
-                alert(`✅ You already have an active token:\nToken: ${patient.token}\nDepartment: ${foundToken.department}\nStatus: ${foundToken.status.toUpperCase()}`);
+      // First check if patient exists and has a token
+      let hasActiveToken = false;
+      try {
+        const checkResponse = await api.get(`/api/patients/phone/${phone}`);
+        
+        if (checkResponse.data.success && checkResponse.data.data) {
+          const patient = checkResponse.data.data;
+          if (patient.token) {
+            const tokensResponse = await api.get('/api/tokens');
+            if (tokensResponse.data.success) {
+              const foundToken = tokensResponse.data.data.find(t => t.token_number === patient.token);
+              if (foundToken) {
+                const isToday = new Date(foundToken.created_at).toDateString() === new Date().toDateString();
+                const isActive = foundToken.status === 'waiting' || foundToken.status === 'called';
                 
-                onTokenFound({
-                  token: patient.token,
-                  room: patient.room_number || Math.floor(Math.random() * 20) + 1,
-                  departmentName: foundToken.department || 'General',
-                  isExistingPatient: true,
-                  tokenStatus: foundToken.status,
-                  positionInQueue: 0
-                });
-                return;
+                if (isActive && isToday) {
+                  hasActiveToken = true;
+                  alert(`✅ You already have an active token:\nToken: ${patient.token}\nDepartment: ${foundToken.department}\nStatus: ${foundToken.status.toUpperCase()}`);
+                  
+                  onTokenFound({
+                    token: patient.token,
+                    room: patient.room_number || Math.floor(Math.random() * 20) + 1,
+                    departmentName: foundToken.department || 'General',
+                    isExistingPatient: true,
+                    tokenStatus: foundToken.status,
+                    positionInQueue: 0
+                  });
+                  setIsGeneratingQuickToken(false);
+                  return;
+                }
               }
             }
           }
         }
+      } catch (checkError) {
+        // 404 means patient doesn't exist - that's fine, we'll create new
+        if (checkError.response?.status !== 404) {
+          console.error('Error checking patient:', checkError);
+        }
       }
 
-      // Generate new token for General Medicine
-      console.log('🔄 Generating quick token for General Medicine...');
-      
-      const tokenResponse = await api.post('/api/tokens/generate', {
-        name: patientName,
-        phoneNumber: phone,
-        age: patientData.age || null,
-        department: 'General Medicine',
-        source: 'Counter'
-      });
-
-      if (tokenResponse.data.success) {
-        const tokenData = tokenResponse.data.data;
+      // If no active token, generate new one
+      if (!hasActiveToken) {
+        console.log('🔄 Generating quick token for General Medicine...');
         
-        // Save to patients table
-        await api.post('/api/patients/save', {
-          language: patientData.language || 'EN',
-          phoneNumber: phone,
+        const patientName = patientData.name || 'Patient';
+        const patientAge = patientData.age || null;
+        
+        const tokenResponse = await api.post('/api/tokens/generate', {
           name: patientName,
-          age: patientData.age || null,
+          phoneNumber: phone,
+          age: patientAge,
           department: 'General Medicine',
-          departmentName: 'General Medicine',
-          token: tokenData.token_number,
-          roomNumber: tokenData.room_number
+          source: 'Counter'
         });
 
-        alert(`✅ Quick Token Generated!\n\nToken: ${tokenData.token_number}\nDepartment: General Medicine\nRoom: ${tokenData.room_number}\nStatus: ${tokenData.status.toUpperCase()}`);
-        
-        // Navigate to token screen
-        onTokenFound({
-          token: tokenData.token_number,
-          room: tokenData.room_number || Math.floor(Math.random() * 20) + 1,
-          departmentName: 'General Medicine',
-          isExistingPatient: false,
-          tokenStatus: tokenData.status,
-          positionInQueue: 0
-        });
-      } else {
-        alert('❌ Failed to generate token: ' + (tokenResponse.data.error || 'Unknown error'));
+        if (tokenResponse.data.success) {
+          const tokenData = tokenResponse.data.data;
+          
+          // Save to patients table
+          await api.post('/api/patients/save', {
+            language: patientData.language || 'EN',
+            phoneNumber: phone,
+            name: patientName,
+            age: patientAge,
+            department: 'General Medicine',
+            departmentName: 'General Medicine',
+            token: tokenData.token_number,
+            roomNumber: tokenData.room_number
+          });
+
+          // Update localStorage
+          localStorage.setItem('patientData', JSON.stringify({
+            ...patientData,
+            phoneNumber: phone,
+            name: patientName,
+            age: patientAge,
+            department: 'General Medicine',
+            departmentName: 'General Medicine',
+            token: tokenData.token_number,
+            room: tokenData.room_number
+          }));
+
+          alert(`✅ Quick Token Generated!\n\nToken: ${tokenData.token_number}\nDepartment: General Medicine\nRoom: ${tokenData.room_number}\nStatus: ${tokenData.status.toUpperCase()}`);
+          
+          // Navigate to token screen
+          onTokenFound({
+            token: tokenData.token_number,
+            room: tokenData.room_number || Math.floor(Math.random() * 20) + 1,
+            departmentName: 'General Medicine',
+            isExistingPatient: false,
+            tokenStatus: tokenData.status,
+            positionInQueue: 0
+          });
+        } else {
+          alert('❌ Failed to generate token: ' + (tokenResponse.data.error || 'Unknown error'));
+        }
       }
     } catch (error) {
       console.error('❌ Error generating quick token:', error);
-      alert('Error generating quick token. Please try again.\n\nError: ' + error.message);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        alert(`Error generating quick token: ${error.response.data?.error || error.message}`);
+      } else {
+        alert('Error generating quick token. Please try again.\n\nError: ' + error.message);
+      }
     } finally {
       setIsGeneratingQuickToken(false);
     }
