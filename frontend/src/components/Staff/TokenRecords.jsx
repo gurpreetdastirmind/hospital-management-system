@@ -1,3 +1,4 @@
+// frontend/src/components/Staff/TokenRecords.jsx
 import React, { useState } from 'react';
 
 const TokenRecords = ({ tokens, onRefresh }) => {

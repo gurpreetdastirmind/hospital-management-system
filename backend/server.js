@@ -1,3 +1,4 @@
+// backend/server.js
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -61,6 +62,7 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/tokens', tokenRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/doctors', doctorRoutes);
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -72,7 +74,8 @@ app.get('/api/health', (req, res) => {
       patients: '/api/patients',
       departments: '/api/departments',
       tokens: '/api/tokens',
-      staff: '/api/staff'
+      staff: '/api/staff',
+      doctors: '/api/doctors'
     }
   });
 });
@@ -96,6 +99,11 @@ app.get('/', (req, res) => {
       'PUT /api/tokens/:id/status': 'Update token status',
       'GET /api/tokens/department/:department': 'Get tokens by department',
       'GET /api/tokens/stats/daily': 'Get daily statistics',
+      'GET /api/doctors': 'Get all doctors',
+      'POST /api/doctors': 'Create new doctor',
+      'PUT /api/doctors/:id': 'Update doctor',
+      'DELETE /api/doctors/:id': 'Delete doctor',
+      'PATCH /api/doctors/:id/toggle-status': 'Toggle doctor status',
       'GET /api/health': 'Health check'
     }
   });
@@ -116,5 +124,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   - /api/departments`);
   console.log(`   - /api/tokens`);
   console.log(`   - /api/staff`);
+  console.log(`   - /api/doctors`);
   console.log(`   - /api/health`);
 });

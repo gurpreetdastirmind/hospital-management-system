@@ -1,3 +1,4 @@
+// backend/database.js
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
@@ -107,7 +108,7 @@ const initDatabase = () => {
       }
     });
 
-    // Create tokens table
+    // Create tokens table with doctor column
     db.run(`
       CREATE TABLE IF NOT EXISTS tokens (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,6 +118,7 @@ const initDatabase = () => {
         age INTEGER,
         department TEXT NOT NULL,
         room_number TEXT,
+        doctor TEXT,
         source TEXT DEFAULT 'App',
         status TEXT DEFAULT 'waiting',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -135,6 +137,18 @@ const initDatabase = () => {
         db.run(`CREATE INDEX IF NOT EXISTS idx_tokens_department ON tokens(department)`);
         db.run(`CREATE INDEX IF NOT EXISTS idx_tokens_status ON tokens(status)`);
         db.run(`CREATE INDEX IF NOT EXISTS idx_tokens_created_at ON tokens(created_at)`);
+        db.run(`CREATE INDEX IF NOT EXISTS idx_tokens_doctor ON tokens(doctor)`);
+      }
+    });
+
+    // Add doctor column to tokens table if it doesn't exist (migration)
+    db.run(`ALTER TABLE tokens ADD COLUMN doctor TEXT`, (err) => {
+      if (err && !err.message.includes('duplicate column name')) {
+        console.error('Error adding doctor column:', err.message);
+      } else if (err) {
+        console.log('✅ Doctor column already exists in tokens table');
+      } else {
+        console.log('✅ Doctor column added to tokens table');
       }
     });
 

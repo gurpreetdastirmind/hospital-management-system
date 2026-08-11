@@ -36,16 +36,12 @@ const getCurrentCalledToken = async (department) => {
   return await getQuery(sql, [department]);
 };
 
-// Check and auto-complete expired tokens - FIXED
+// Check and auto-complete expired tokens
 const checkAndAutoComplete = async () => {
   const now = new Date();
   const twentyMinutesAgo = new Date(now.getTime() - 20 * 60 * 1000);
-  
-  // Format the date for SQLite comparison
   const twentyMinutesAgoStr = twentyMinutesAgo.toISOString().replace('T', ' ').slice(0, 19);
   
-  // Find all called tokens where updated_at is older than 20 minutes
-  // We use updated_at because that's when the token was called
   const sql = `
     SELECT * FROM tokens 
     WHERE status = 'called' 
@@ -58,23 +54,19 @@ const checkAndAutoComplete = async () => {
   console.log(`⏰ Found ${expiredTokens.length} expired tokens (called before ${twentyMinutesAgoStr})`);
   
   for (const token of expiredTokens) {
-    // Mark as completed
     await runQuery(
       `UPDATE tokens SET status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
       [token.id]
     );
     console.log(`✅ Auto-completed ${token.token_number} for ${token.department} department (was called at ${token.updated_at})`);
-    
-    // Auto-call next token for this department
     await autoCallNextToken(token.department);
   }
   
   return expiredTokens.length;
 };
 
-// Auto-call next token - FIXED: set updated_at to current time when called
+// Auto-call next token
 const autoCallNextToken = async (department) => {
-  // Find next waiting token
   const nextSql = `
     SELECT * FROM tokens 
     WHERE department = ? AND status = 'waiting'
@@ -84,12 +76,10 @@ const autoCallNextToken = async (department) => {
   const nextToken = await getQuery(nextSql, [department]);
   
   if (nextToken) {
-    // Mark as called - set updated_at to current time for timer start
     await runQuery(
       `UPDATE tokens SET status = 'called', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
       [nextToken.id]
     );
-    
     console.log(`🔄 Auto-called ${nextToken.token_number} for ${department} department at ${new Date().toISOString()}`);
     return nextToken;
   }
@@ -97,10 +87,10 @@ const autoCallNextToken = async (department) => {
   return null;
 };
 
-// Generate new token
+// Generate new token - UPDATED with doctor field
 const generateToken = async (req, res, next) => {
   try {
-    const { name, phoneNumber, age, department, source = 'App' } = req.body;
+    const { name, phoneNumber, age, department, source = 'App', doctor } = req.body;
     
     if (!name || !phoneNumber || !department) {
       return res.status(400).json({
@@ -136,11 +126,12 @@ const generateToken = async (req, res, next) => {
     const tokenNumber = await generateTokenNumber(department);
     const roomNumber = departmentInfo.room || `Room ${Math.floor(Math.random() * 20) + 1}`;
     
+    // UPDATED: Added doctor field to INSERT
     const sql = `
       INSERT INTO tokens (
         token_number, patient_name, phone_number, age, department, 
-        room_number, source, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'waiting', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        room_number, doctor, source, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'waiting', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `;
     
     const result = await runQuery(sql, [
@@ -150,6 +141,7 @@ const generateToken = async (req, res, next) => {
       age || null,
       department,
       roomNumber,
+      doctor || null,  // ADDED: doctor field
       source
     ]);
     
@@ -162,7 +154,6 @@ const generateToken = async (req, res, next) => {
     );
     
     if (waitingCount.count === 1) {
-      // This is the only waiting token, call it
       await runQuery(
         `UPDATE tokens SET status = 'called', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
         [newToken.id]
@@ -210,7 +201,7 @@ const getTokenByIdRoute = async (req, res, next) => {
   }
 };
 
-// Get all tokens - FIXED: Check expiry on every request
+// Get all tokens - UPDATED to include doctor field
 const getTokens = async (req, res, next) => {
   try {
     // First, check and auto-complete expired tokens
@@ -270,7 +261,7 @@ const getTokens = async (req, res, next) => {
   }
 };
 
-// Update token status - FIXED: Properly handle timers
+// Update token status
 const updateTokenStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -295,14 +286,12 @@ const updateTokenStatus = async (req, res, next) => {
     let updateSql = `UPDATE tokens SET status = ? WHERE id = ?`;
     let params = [status, id];
     
-    // If setting to 'called', update updated_at to start timer
     if (status === 'called') {
       updateSql = `UPDATE tokens SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
       params = [status, id];
       console.log(`📢 Token ${existingToken.token_number} called for ${existingToken.department} at ${new Date().toISOString()}`);
     }
     
-    // If setting to 'completed', update updated_at and auto-call next
     if (status === 'completed') {
       updateSql = `UPDATE tokens SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
       params = [status, id];
@@ -320,7 +309,6 @@ const updateTokenStatus = async (req, res, next) => {
     
     const updatedToken = await getTokenById(id);
     
-    // If status is 'completed', auto-call next token
     if (status === 'completed') {
       await autoCallNextToken(updatedToken.department);
     }
@@ -364,11 +352,11 @@ const getTokensByDepartment = async (req, res, next) => {
   }
 };
 
-// Update token
+// Update token - UPDATED to include doctor field
 const updateToken = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { patient_name, phone_number, age, department, room_number } = req.body;
+    const { patient_name, phone_number, age, department, room_number, doctor } = req.body;
     
     const existingToken = await getTokenById(id);
     if (!existingToken) {
@@ -400,6 +388,10 @@ const updateToken = async (req, res, next) => {
     if (room_number) {
       updates.push('room_number = ?');
       params.push(room_number);
+    }
+    if (doctor !== undefined) {  // ADDED: doctor field update
+      updates.push('doctor = ?');
+      params.push(doctor);
     }
     
     if (updates.length === 0) {
@@ -513,22 +505,18 @@ const getDepartmentStatus = async (req, res, next) => {
   try {
     const { department } = req.params;
     
-    // Get current called token
     const currentCalled = await getCurrentCalledToken(department);
     
-    // Get waiting count
     const waitingCount = await getQuery(
       `SELECT COUNT(*) as count FROM tokens WHERE department = ? AND status = 'waiting'`,
       [department]
     );
     
-    // Get all waiting tokens
     const waitingTokens = await allQuery(
       `SELECT * FROM tokens WHERE department = ? AND status = 'waiting' ORDER BY created_at ASC`,
       [department]
     );
     
-    // Get completed today count
     const completedToday = await getQuery(
       `SELECT COUNT(*) as count FROM tokens WHERE department = ? AND status = 'completed' AND date(created_at) = date('now')`,
       [department]
