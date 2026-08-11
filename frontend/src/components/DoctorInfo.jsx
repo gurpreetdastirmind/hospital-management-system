@@ -54,14 +54,11 @@ const DoctorInfo = () => {
     return dept?.icon || '🏥';
   };
 
-  // Calculate availability status based on doctor's status
   const getAvailabilityStatus = (doctor) => {
     if (doctor.status === 'inactive') {
       return { status: 'unavailable', label: 'Unavailable', color: '#e74c3c' };
     }
     
-    // Check if doctor has tokens today
-    // For demo purposes, we'll use random availability
     const random = Math.random();
     if (random < 0.3) {
       return { status: 'busy', label: 'Busy', color: '#ff9800' };
@@ -72,24 +69,20 @@ const DoctorInfo = () => {
     }
   };
 
-  // Get availability time slots
   const getAvailabilityTimes = (doctor) => {
-    // In production, this would come from the database
-    // For demo, generate realistic time slots
     const slots = [];
-    const now = new Date();
     const startHour = 9;
     const endHour = 17;
     
     for (let hour = startHour; hour < endHour; hour++) {
-      if (Math.random() > 0.3) { // 70% chance of having a slot
+      if (Math.random() > 0.3) {
         slots.push({
           time: `${hour.toString().padStart(2, '0')}:00 - ${(hour+1).toString().padStart(2, '0')}:00`,
           available: Math.random() > 0.4
         });
       }
     }
-    return slots.slice(0, 4); // Return up to 4 slots
+    return slots.slice(0, 4);
   };
 
   const getExperienceYears = (experience) => {
@@ -117,8 +110,15 @@ const DoctorInfo = () => {
   };
 
   const handleViewDoctor = (doctor) => {
-    // Navigate to doctor detail page or show modal
-    alert(`👨‍⚕️ ${doctor.name}\n\nSpecialization: ${doctor.specialization}\nDepartment: ${doctor.department}\nQualification: ${doctor.qualification || 'N/A'}\nExperience: ${getExperienceYears(doctor.experience)}\nPhone: ${doctor.phone || 'N/A'}\nEmail: ${doctor.email || 'N/A'}`);
+    const message = `👨‍⚕️ ${doctor.name}\n\n` +
+      `Specialization: ${doctor.specialization}\n` +
+      `Department: ${doctor.department}\n` +
+      `Qualification: ${doctor.qualification || 'N/A'}\n` +
+      `Experience: ${getExperienceYears(doctor.experience)}\n` +
+      `Phone: ${doctor.phone || 'N/A'}\n` +
+      `Email: ${doctor.email || 'N/A'}`;
+    
+    alert(message);
   };
 
   const activeDepartments = departments.filter(d => d.is_open === 1);
@@ -150,7 +150,7 @@ const DoctorInfo = () => {
           </div>
           <div className="stat-card">
             <span className="stat-number">{doctors.filter(d => d.status === 'active').length}</span>
-            <span className="stat-label">Active Doctors</span>
+            <span className="stat-label">Active</span>
           </div>
           <div className="stat-card">
             <span className="stat-number">{activeDepartments.length}</span>
@@ -184,7 +184,7 @@ const DoctorInfo = () => {
             className={`filter-btn ${selectedDepartment === 'all' ? 'active' : ''}`}
             onClick={() => setSelectedDepartment('all')}
           >
-            All Departments
+            All
           </button>
           {activeDepartments.map(dept => (
             <button
@@ -194,7 +194,7 @@ const DoctorInfo = () => {
               style={{
                 borderColor: selectedDepartment === dept.name ? dept.color : '#e8ecf0',
                 backgroundColor: selectedDepartment === dept.name ? dept.color : 'transparent',
-                color: selectedDepartment === dept.name ? 'white' : '#333'
+                color: selectedDepartment === dept.name ? 'white' : '#4a5a6e'
               }}
             >
               {dept.icon} {dept.name}
