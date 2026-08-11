@@ -993,3 +993,95 @@ h2 {
 .screen-container + .progress-indicator + .live-queue-button-container {
   margin-top: 20px;
 }
+
+/* frontend/src/styles/App.css */
+
+/* Quick Token Section */
+.quick-token-section {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.quick-token-btn {
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.quick-token-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(76, 175, 80, 0.4);
+}
+
+.quick-token-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quick-token-hint {
+  font-size: 11px;
+  color: #999;
+  margin-top: 6px;
+}
+
+/* Phone Actions */
+.phone-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.check-token-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #FF9800, #F57C00);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.check-token-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(255, 152, 0, 0.3);
+}
+
+.check-token-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .quick-token-btn {
+    font-size: 14px;
+    padding: 12px 20px;
+  }
+  
+  .check-token-btn {
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+  
+  .quick-token-hint {
+    font-size: 10px;
+  }
+}

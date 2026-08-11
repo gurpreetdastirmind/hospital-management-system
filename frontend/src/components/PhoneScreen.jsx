@@ -1,12 +1,14 @@
+// frontend/src/components/PhoneScreen.jsx
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { LanguageContext } from '../App.jsx';
-import api from '../api'; // Make sure to import api
+import api from '../api';
 
 const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
   const { language, translations, changeLanguage } = useContext(LanguageContext);
   const [phone, setPhone] = useState(phoneNumber || '');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [isGeneratingQuickToken, setIsGeneratingQuickToken] = useState(false);
   const inputRef = useRef(null);
   const speechTimeoutRef = useRef(null);
 
@@ -79,7 +81,7 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
     }
   };
 
-  // NEW: Check if phone exists in database
+  // Check if phone exists in database
   const checkExistingPatient = async (phoneNumber) => {
     setIsChecking(true);
     
@@ -92,9 +94,7 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
         const patient = response.data.data;
         console.log('✅ Found existing patient:', patient);
         
-        // Check if patient has an active token
         if (patient.token) {
-          // Check if token is still active (waiting or called)
           const tokensResponse = await api.get('/api/tokens');
           
           if (tokensResponse.data.success) {
@@ -105,70 +105,57 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
               const isActive = foundToken.status === 'waiting' || foundToken.status === 'called';
               
               if (isActive && isToday) {
-                // Token is active - show token screen
                 console.log('🎫 Active token found:', patient.token);
                 
-                // Get department name
                 let deptName = patient.department || patient.department_name || 'General';
                 
-                // Show alert with token info
                 alert(`✅ Welcome back!\n\nYou already have an active token:\nToken: ${patient.token}\nDepartment: ${deptName}\nRoom: ${patient.room_number || 'N/A'}\nStatus: ${foundToken.status.toUpperCase()}\n\nWe'll take you to your token now.`);
                 
-                // Navigate directly to token screen with existing data
                 onTokenFound({
                   token: patient.token,
                   room: patient.room_number || Math.floor(Math.random() * 20) + 1,
                   departmentName: deptName,
                   isExistingPatient: true,
                   tokenStatus: foundToken.status,
-                  positionInQueue: 0 // Will be calculated in TokenScreen
+                  positionInQueue: 0
                 });
                 
-                return true; // Found active token
+                return true;
               } else {
                 console.log('⏰ Token expired or completed:', foundToken.status);
-                // Token exists but is expired/completed - ask user what to do
                 const wantsNew = window.confirm(
                   `You had a token (${patient.token}) but it's already ${foundToken.status}.\n\nWould you like to register for a new token?`
                 );
                 
                 if (wantsNew) {
-                  // User wants new token - proceed to next screen
                   return false;
                 } else {
-                  // User doesn't want new token - go back
-                  return true; // Stop further processing
+                  return true;
                 }
               }
             }
           }
         }
         
-        // No active token found - ask if they want to register
         const wantsRegister = window.confirm(
           `Welcome back ${patient.name || 'Patient'}!\n\nYour phone number is already registered.\nWould you like to register for a new token?`
         );
         
         if (wantsRegister) {
-          // User wants to register new token
-          return false; // Proceed to next screen
+          return false;
         } else {
-          // User doesn't want to register
-          return true; // Stop
+          return true;
         }
       }
       
-      // No patient found - continue to registration
       return false;
       
     } catch (error) {
       console.error('Error checking patient:', error);
-      // If patient not found (404), continue to registration
       if (error.response?.status === 404) {
         console.log('📝 New patient - proceeding to registration');
         return false;
       }
-      // For other errors, ask user if they want to continue
       const continueAnyway = window.confirm(
         'Could not check existing records. Would you like to continue with registration?'
       );
@@ -178,36 +165,123 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
     }
   };
 
+  // Generate Quick Token for General Medicine
+  const handleGenerateQuickToken = async () => {
+    if (phone.length !== 10) {
+      alert('Please enter a valid 10-digit phone number');
+      return;
+    }
+
+    setIsGeneratingQuickToken(true);
+
+    try {
+      // Get patient name from localStorage or use default
+      const patientData = JSON.parse(localStorage.getItem('patientData') || '{}');
+      const patientName = patientData.name || 'Patient';
+
+      // Check if patient already has a token
+      const checkResponse = await api.get(`/api/patients/phone/${phone}`);
+      
+      if (checkResponse.data.success && checkResponse.data.data) {
+        const patient = checkResponse.data.data;
+        if (patient.token) {
+          const tokensResponse = await api.get('/api/tokens');
+          if (tokensResponse.data.success) {
+            const foundToken = tokensResponse.data.data.find(t => t.token_number === patient.token);
+            if (foundToken) {
+              const isToday = new Date(foundToken.created_at).toDateString() === new Date().toDateString();
+              const isActive = foundToken.status === 'waiting' || foundToken.status === 'called';
+              
+              if (isActive && isToday) {
+                alert(`✅ You already have an active token:\nToken: ${patient.token}\nDepartment: ${foundToken.department}\nStatus: ${foundToken.status.toUpperCase()}`);
+                
+                onTokenFound({
+                  token: patient.token,
+                  room: patient.room_number || Math.floor(Math.random() * 20) + 1,
+                  departmentName: foundToken.department || 'General',
+                  isExistingPatient: true,
+                  tokenStatus: foundToken.status,
+                  positionInQueue: 0
+                });
+                return;
+              }
+            }
+          }
+        }
+      }
+
+      // Generate new token for General Medicine
+      console.log('🔄 Generating quick token for General Medicine...');
+      
+      const tokenResponse = await api.post('/api/tokens/generate', {
+        name: patientName,
+        phoneNumber: phone,
+        age: patientData.age || null,
+        department: 'General Medicine',
+        source: 'Counter'
+      });
+
+      if (tokenResponse.data.success) {
+        const tokenData = tokenResponse.data.data;
+        
+        // Save to patients table
+        await api.post('/api/patients/save', {
+          language: patientData.language || 'EN',
+          phoneNumber: phone,
+          name: patientName,
+          age: patientData.age || null,
+          department: 'General Medicine',
+          departmentName: 'General Medicine',
+          token: tokenData.token_number,
+          roomNumber: tokenData.room_number
+        });
+
+        alert(`✅ Quick Token Generated!\n\nToken: ${tokenData.token_number}\nDepartment: General Medicine\nRoom: ${tokenData.room_number}\nStatus: ${tokenData.status.toUpperCase()}`);
+        
+        // Navigate to token screen
+        onTokenFound({
+          token: tokenData.token_number,
+          room: tokenData.room_number || Math.floor(Math.random() * 20) + 1,
+          departmentName: 'General Medicine',
+          isExistingPatient: false,
+          tokenStatus: tokenData.status,
+          positionInQueue: 0
+        });
+      } else {
+        alert('❌ Failed to generate token: ' + (tokenResponse.data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('❌ Error generating quick token:', error);
+      alert('Error generating quick token. Please try again.\n\nError: ' + error.message);
+    } finally {
+      setIsGeneratingQuickToken(false);
+    }
+  };
+
   const handleNext = async () => {
     if (phone.length !== 10) {
       alert(translations.pleaseEnterPhone);
       return;
     }
 
-    // Save phone to localStorage first
     const patientData = JSON.parse(localStorage.getItem('patientData') || '{}');
     localStorage.setItem('patientData', JSON.stringify({
       ...patientData,
       phoneNumber: phone
     }));
 
-    // Check if patient already exists
     const shouldStop = await checkExistingPatient(phone);
     
     if (!shouldStop) {
-      // No active token found - proceed to next screen (Name)
       onNext({ phoneNumber: phone });
     }
-    // If shouldStop is true, we either showed token or user cancelled
   };
 
-  // NEW: Handle "Check Token" button click
   const handleCheckToken = async () => {
     if (phone.length !== 10) {
       alert('Please enter a valid 10-digit phone number');
       return;
     }
-    
     await checkExistingPatient(phone);
   };
 
@@ -230,6 +304,7 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
     }
     
     const newLang = language === 'EN' ? 'HI' : 'EN';
+    const langName = newLang === 'EN' ? translations.english : translations.hindi;
     
     changeLanguage(newLang);
     
@@ -284,23 +359,28 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
           </div>
         </div>
 
-        {/* NEW: Check Token Button */}
-        <div className="phone-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
+        {/* Quick Token Button - Directly generate token for General Medicine */}
+        <div className="quick-token-section">
+          <button 
+            className="quick-token-btn"
+            onClick={handleGenerateQuickToken}
+            disabled={phone.length !== 10 || isGeneratingQuickToken}
+          >
+            {isGeneratingQuickToken ? (
+              '⏳ Generating...'
+            ) : (
+              '⚡ Quick Token - General Medicine'
+            )}
+          </button>
+          <p className="quick-token-hint">Directly generate a token for General Medicine department</p>
+        </div>
+
+        {/* Check Token Button */}
+        <div className="phone-actions">
           <button 
             className="check-token-btn"
             onClick={handleCheckToken}
             disabled={phone.length !== 10 || isChecking}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: '#FF9800',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: phone.length === 10 ? 'pointer' : 'not-allowed',
-              opacity: phone.length === 10 ? 1 : 0.5
-            }}
           >
             {isChecking ? '⏳ Checking...' : '🔍 Check Existing Token'}
           </button>
