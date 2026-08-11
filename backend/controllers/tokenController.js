@@ -17,9 +17,10 @@ const generateTokenNumber = async (department) => {
   if (deptInfo && deptInfo.token_prefix) {
     prefix = deptInfo.token_prefix;
   } else {
-    // Fallback mapping for departments
+    // Fallback mapping for departments - UPDATED WITH CORRECT PREFIXES
     const prefixMap = {
       'General Medicine': 'G',
+      'General': 'G',
       'Dental': 'D',
       'Eye': 'E',
       'Bones': 'B',
@@ -28,7 +29,9 @@ const generateTokenNumber = async (department) => {
       'Skin': 'S',
       'ENT': 'N',
       'X-Ray': 'X',
+      'XRay': 'X',
       'Blood Test': 'B',
+      'BloodTest': 'B',
       'Urology': 'U'
     };
     prefix = prefixMap[department] || department.substring(0, 1).toUpperCase();

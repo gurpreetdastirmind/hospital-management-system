@@ -84,23 +84,22 @@ const initDatabase = () => {
       } else {
         console.log('✅ Departments table created/verified');
         
-        // Insert default departments if none exist - UPDATED WITH ALL DEPARTMENTS
+        // Insert default departments if none exist - WITH CORRECT PREFIXES
         db.get(`SELECT COUNT(*) as count FROM departments`, (err, row) => {
           if (row && row.count === 0) {
-           const defaultDepts = [
-  ['General Medicine', 'Room 12', 'G', '🏥', '#4CAF50'],
-  ['Dental', 'Room 21', 'D', '🦷', '#2196F3'],
-  ['Eye', 'Room 18', 'E', '👁️', '#FF9800'],
-  ['Bones', 'Room 31', 'B', '🦴', '#9C27B0'],
-  ['Child', 'Room 26', 'C', '👶', '#E91E63'],
-  ['Women', 'Room 15', 'W', '👩', '#F44336'],
-  // NEW DEPARTMENTS WITH CORRECT PREFIXES
-  ['Skin', 'Room 41', 'S', '🧴', '#FF6F00'],
-  ['ENT', 'Room 42', 'N', '👂', '#00897B'],
-  ['X-Ray', 'Room 43', 'X', '🩻', '#5D4037'],
-  ['Blood Test', 'Room 44', 'B', '🩸', '#C62828'],
-  ['Urology', 'Room 45', 'U', '🫘', '#4A148C']
-];
+            const defaultDepts = [
+              ['General Medicine', 'Room 12', 'G', '🏥', '#4CAF50'],
+              ['Dental', 'Room 21', 'D', '🦷', '#2196F3'],
+              ['Eye', 'Room 18', 'E', '👁️', '#FF9800'],
+              ['Bones', 'Room 31', 'B', '🦴', '#9C27B0'],
+              ['Child', 'Room 26', 'C', '👶', '#E91E63'],
+              ['Women', 'Room 15', 'W', '👩', '#F44336'],
+              ['Skin', 'Room 41', 'S', '🧴', '#FF6F00'],
+              ['ENT', 'Room 42', 'N', '👂', '#00897B'],
+              ['X-Ray', 'Room 43', 'X', '🩻', '#5D4037'],
+              ['Blood Test', 'Room 44', 'B', '🩸', '#C62828'],
+              ['Urology', 'Room 45', 'U', '🫘', '#4A148C']
+            ];
             
             defaultDepts.forEach(dept => {
               db.run(`
@@ -108,7 +107,7 @@ const initDatabase = () => {
                 VALUES (?, ?, ?, ?, ?)
               `, dept);
             });
-            console.log('✅ Default departments inserted');
+            console.log('✅ Default departments inserted with correct token prefixes');
           }
         });
       }
@@ -242,7 +241,6 @@ const initDatabase = () => {
               ['Dr. Sneha Reddy', 'Ophthalmology', 'Eye', '9876543213', 'sneha@hospital.com', 'MBBS, MS Ophthalmology', '10'],
               ['Dr. Vikram Singh', 'General Medicine', 'General Medicine', '9876543214', 'vikram@hospital.com', 'MBBS, MD Medicine', '20'],
               ['Dr. Ananya Gupta', 'Gynecology', 'Women', '9876543215', 'ananya@hospital.com', 'MBBS, MS Gynecology', '11'],
-              // Add doctors for new departments
               ['Dr. Meera Patel', 'Dermatology', 'Skin', '9876543216', 'meera@hospital.com', 'MBBS, MD Dermatology', '8'],
               ['Dr. Sanjay Reddy', 'ENT', 'ENT', '9876543217', 'sanjay@hospital.com', 'MBBS, MS ENT', '12'],
               ['Dr. Priya Singh', 'Radiology', 'X-Ray', '9876543218', 'priya.rad@hospital.com', 'MBBS, MD Radiology', '10'],
