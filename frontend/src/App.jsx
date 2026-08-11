@@ -1,4 +1,3 @@
-// frontend/src/App.jsx
 import React, { useState, createContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LanguageScreen from './components/LanguageScreen.jsx';
@@ -13,22 +12,6 @@ import './styles/App.css';
 
 // Create Language Context
 export const LanguageContext = createContext();
-
-// Create Hospital Context
-export const HospitalContext = createContext();
-
-// Hospital Information
-const HOSPITAL_INFO = {
-  name: 'Civil Hospital',
-  address: '123 Main Street, City Center',
-  phone: '+91 98765 43210',
-  emergency: '+91 98765 43211',
-  email: 'info@civilhospital.com',
-  website: 'www.civilhospital.com',
-  emergencyServices: '24/7 Emergency Services Available',
-  opdTiming: 'Mon-Sat: 8:00 AM - 8:00 PM',
-  departments: ['General', 'Dental', 'Eye', 'Bones', 'Child', 'Women']
-};
 
 // Patient App Component
 const PatientApp = () => {
@@ -61,6 +44,7 @@ const PatientApp = () => {
   };
 
   const handleBack = () => {
+    // If existing patient, go back to phone screen instead of department
     if (patientData.isExistingPatient && currentScreen === 5) {
       setCurrentScreen(1);
       return;
@@ -78,6 +62,8 @@ const PatientApp = () => {
     };
     setPatientData(updatedData);
     localStorage.setItem('patientData', JSON.stringify(updatedData));
+    
+    // Directly go to TokenScreen (index 5)
     setCurrentScreen(5);
   };
 
@@ -154,49 +140,6 @@ const PatientApp = () => {
         <span className={`dot ${currentScreen === 4 ? 'active' : ''}`}></span>
         <span className={`dot ${currentScreen === 5 ? 'active' : ''}`}></span>
       </div>
-
-      {/* Hospital Info Footer - Always visible */}
-      <HospitalInfoFooter />
-    </div>
-  );
-};
-
-// Hospital Info Footer Component
-const HospitalInfoFooter = () => {
-  const { language, translations } = React.useContext(LanguageContext);
-  
-  return (
-    <div className="hospital-info-footer">
-      <div className="hospital-info-content">
-        <div className="hospital-info-row">
-          <div className="hospital-info-item">
-            <span className="info-icon">🏥</span>
-            <span className="info-text">Civil Hospital</span>
-          </div>
-          <div className="hospital-info-item">
-            <span className="info-icon">📞</span>
-            <span className="info-text">+91 98765 43210</span>
-          </div>
-          <div className="hospital-info-item emergency">
-            <span className="info-icon">🚨</span>
-            <span className="info-text emergency-text">Emergency: +91 98765 43211</span>
-          </div>
-        </div>
-        <div className="hospital-info-row">
-          <div className="hospital-info-item">
-            <span className="info-icon">🕐</span>
-            <span className="info-text">24/7 Emergency Services</span>
-          </div>
-          <div className="hospital-info-item">
-            <span className="info-icon">📅</span>
-            <span className="info-text">OPD: Mon-Sat 8AM-8PM</span>
-          </div>
-          <div className="hospital-info-item">
-            <span className="info-icon">📍</span>
-            <span className="info-text">123 Main Street, City Center</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
@@ -270,12 +213,6 @@ function App() {
       welcomeBack: 'Welcome back',
       yourTokenExpired: 'Your token has expired',
       pleaseRegisterAgain: 'Please register again',
-      emergency: '🚨 Emergency',
-      emergencyNumber: '+91 98765 43211',
-      hospitalPhone: '📞 +91 98765 43210',
-      hospitalAddress: '📍 123 Main Street, City Center',
-      opdTiming: '🕐 OPD: Mon-Sat 8AM-8PM',
-      emergencyServices: '🚑 24/7 Emergency Services',
     },
     HI: {
       hospital: 'सिविल अस्पताल',
@@ -341,12 +278,6 @@ function App() {
       welcomeBack: 'वापसी पर स्वागत है',
       yourTokenExpired: 'आपका टोकन समाप्त हो गया है',
       pleaseRegisterAgain: 'कृपया फिर से पंजीकरण करें',
-      emergency: '🚨 आपातकालीन',
-      emergencyNumber: '+91 98765 43211',
-      hospitalPhone: '📞 +91 98765 43210',
-      hospitalAddress: '📍 123 मेन स्ट्रीट, सिटी सेंटर',
-      opdTiming: '🕐 ओपीडी: सोम-शनि 8AM-8PM',
-      emergencyServices: '🚑 24/7 आपातकालीन सेवाएं',
     }
   };
 
@@ -360,16 +291,14 @@ function App() {
       translations: translations[language] || translations.EN,
       changeLanguage
     }}>
-      <HospitalContext.Provider value={HOSPITAL_INFO}>
-        <Router>
-          <Routes>
-            <Route path="/" element={<PatientApp />} />
-            <Route path="/staff" element={<StaffLogin />} />
-            <Route path="/staff/dashboard" element={<StaffApp />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </Router>
-      </HospitalContext.Provider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<PatientApp />} />
+          <Route path="/staff" element={<StaffLogin />} />
+          <Route path="/staff/dashboard" element={<StaffApp />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
     </LanguageContext.Provider>
   );
 }
