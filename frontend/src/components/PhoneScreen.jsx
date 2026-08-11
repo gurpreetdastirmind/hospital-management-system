@@ -117,7 +117,8 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
                   departmentName: deptName,
                   isExistingPatient: true,
                   tokenStatus: foundToken.status,
-                  positionInQueue: 0
+                  positionInQueue: 0,
+                  quickTokenGenerated: false
                 });
                 
                 return true;
@@ -165,7 +166,7 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
     }
   };
 
-  // Generate Quick Token for General Medicine - FIXED
+  // Generate Quick Token for General Medicine
   const handleGenerateQuickToken = async () => {
     if (phone.length !== 10) {
       alert('Please enter a valid 10-digit phone number');
@@ -203,7 +204,8 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
                     departmentName: foundToken.department || 'General',
                     isExistingPatient: true,
                     tokenStatus: foundToken.status,
-                    positionInQueue: 0
+                    positionInQueue: 0,
+                    quickTokenGenerated: true
                   });
                   setIsGeneratingQuickToken(false);
                   return;
@@ -237,9 +239,9 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
         if (tokenResponse.data.success) {
           const tokenData = tokenResponse.data.data;
           
-          // Step 2: Save patient with the token - FIXED FIELD NAMES
+          // Step 2: Save patient with the token
           const saveResponse = await api.post('/api/patients/save', {
-            phoneNumber: phone,  // Use phoneNumber (matches backend)
+            phoneNumber: phone,
             name: patientName,
             age: patientAge || null,
             department: 'General Medicine',
@@ -251,7 +253,7 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
 
           console.log('📝 Save response:', saveResponse.data);
 
-          // Update localStorage
+          // IMPORTANT: Save to localStorage with ALL data
           localStorage.setItem('patientData', JSON.stringify({
             ...patientData,
             phoneNumber: phone,
@@ -261,19 +263,21 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
             departmentName: 'General Medicine',
             token: tokenData.token_number,
             room: tokenData.room_number,
-            tokenStatus: tokenData.status
+            tokenStatus: tokenData.status,
+            quickTokenGenerated: true
           }));
 
           alert(`✅ Quick Token Generated!\n\nToken: ${tokenData.token_number}\nDepartment: General Medicine\nRoom: ${tokenData.room_number}\nStatus: ${tokenData.status.toUpperCase()}`);
           
-          // Navigate to token screen
+          // Navigate to token screen with flag
           onTokenFound({
             token: tokenData.token_number,
             room: tokenData.room_number || Math.floor(Math.random() * 20) + 1,
             departmentName: 'General Medicine',
             isExistingPatient: false,
             tokenStatus: tokenData.status,
-            positionInQueue: 0
+            positionInQueue: 0,
+            quickTokenGenerated: true
           });
         } else {
           alert('❌ Failed to generate token: ' + (tokenResponse.data.error || 'Unknown error'));

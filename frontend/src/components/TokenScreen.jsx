@@ -9,7 +9,6 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
     const [isSaving, setIsSaving] = useState(false);
     const speechTimeoutRef = useRef(null);
     const [hasCompleted, setHasCompleted] = useState(false);
-    const [isInitialized, setIsInitialized] = useState(false);
     const [waitingCount, setWaitingCount] = useState(0);
     const [estimatedTime, setEstimatedTime] = useState(0);
     const [positionInQueue, setPositionInQueue] = useState(0);
@@ -17,6 +16,8 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
     const [isTokenExpired, setIsTokenExpired] = useState(false);
     const [tokenCreatedDate, setTokenCreatedDate] = useState(null);
 
+    // Check if token was generated via Quick Token flow
+    const isQuickToken = tokenData?.quickTokenGenerated || false;
     const [isExistingPatient] = useState(tokenData?.isExistingPatient || false);
 
     const languageVoiceMap = {
@@ -24,7 +25,7 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
         'HI': 'hi-IN'
     };
 
-    // Generate a random token and room number
+    // Generate a random token and room number (fallback)
     const generateToken = () => {
         const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
         const letter = letters[Math.floor(Math.random() * letters.length)];
@@ -70,7 +71,6 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
     // Check if token is valid (not completed/expired)
     const checkTokenValidity = async () => {
         try {
-            // First check if token exists in database
             const response = await api.get('/api/tokens');
             
             if (response.data.success) {
@@ -83,19 +83,17 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
                     setTokenCreatedDate(foundToken.created_at);
                     
                     if (!isActive || !isToday) {
-                        // Token is expired or completed
                         console.log('❌ Token is expired/completed:', foundToken.status);
                         setIsTokenExpired(true);
                         setTokenStatus('expired');
                         return false;
                     }
                     
-                    // Token is active
                     console.log('✅ Token is active:', foundToken.status);
                     return true;
                 }
             }
-            return true; // New token, not yet in database
+            return true;
         } catch (error) {
             console.error('Error checking token validity:', error);
             return true;
@@ -104,10 +102,8 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
 
     // Fetch queue information for this department
     const fetchQueueInfo = async () => {
-        // First check if token is valid
         const isValid = await checkTokenValidity();
         if (!isValid) {
-            // Token is expired, show expired message
             setIsTokenExpired(true);
             setTokenStatus('expired');
             return;
@@ -120,7 +116,6 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
                 const waitingTokens = response.data.data.waitingTokens || [];
                 const currentCalled = response.data.data.currentCalled;
                 
-                // Check if this token is in waiting list or called
                 const tokenInWaiting = waitingTokens.find(t => t.token_number === token);
                 const tokenCalled = currentCalled && currentCalled.token_number === token;
                 
@@ -136,7 +131,6 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
                     const index = waitingTokens.findIndex(t => t.token_number === token);
                     position = index + 1;
                 } else {
-                    // Check if token exists in database but not in waiting/called
                     const allTokensResponse = await api.get('/api/tokens');
                     
                     if (allTokensResponse.data.success) {
@@ -150,7 +144,6 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
                         }
                     }
                     
-                    // New token not yet in database
                     status = 'waiting';
                     position = waitingTokens.length + 1;
                 }
@@ -177,7 +170,6 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
     useEffect(() => {
         fetchQueueInfo();
         
-        // Refresh queue info every 10 seconds
         const interval = setInterval(fetchQueueInfo, 10000);
         return () => clearInterval(interval);
     }, [departmentName]);
@@ -293,11 +285,12 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
         }
     };
 
+    // Handle Complete button for normal flow
     const handleComplete = async () => {
         if (isSaving || hasCompleted || tokenStatus === 'expired') {
             if (tokenStatus === 'expired') {
                 alert('⚠️ Your token has expired. Please register again.');
-                onBack(); // Go back to phone screen
+                onBack();
             }
             return;
         }
@@ -398,12 +391,45 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
         }
     };
 
+    // Handle Done button for Quick Token flow
+    const handleQuickTokenDone = () => {
+        setHasCompleted(true);
+        speakText(translations.registrationComplete);
+        onNext({ 
+            token: token,
+            room: room,
+            departmentName: departmentName,
+            completed: true 
+        });
+        localStorage.removeItem('patientData');
+        
+        let message = `✅ Registration Complete! Your token is ${token} for ${departmentName} department.`;
+        if (tokenStatus === 'called') {
+            message += ` Please go to Room ${room} now.`;
+        } else if (positionInQueue > 0) {
+            if (positionInQueue === 1) {
+                message += ` You are next in line!`;
+            } else {
+                const hours = Math.floor(estimatedTime / 60);
+                const minutes = estimatedTime % 60;
+                let timeStr = '';
+                if (hours > 0) {
+                    timeStr += `${hours}h `;
+                }
+                timeStr += `${minutes}m`;
+                message += ` Estimated wait time: ${timeStr}. You are position ${positionInQueue} in queue.`;
+            }
+        }
+        alert(message);
+    };
+
     const toggleLanguage = () => {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
         }
 
         const newLang = language === 'EN' ? 'HI' : 'EN';
+        const langName = newLang === 'EN' ? translations.english : translations.hindi;
 
         changeLanguage(newLang);
 
@@ -620,13 +646,26 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
                     >
                         {translations.back}
                     </button>
-                    <button
-                        className="nav-btn submit-btn"
-                        onClick={handleComplete}
-                        disabled={isSaving || hasCompleted}
-                    >
-                        {isSaving ? '⏳ Saving...' : translations.complete}
-                    </button>
+                    
+                    {/* Show different button based on flow */}
+                    {isQuickToken ? (
+                        <button
+                            className="nav-btn submit-btn"
+                            onClick={handleQuickTokenDone}
+                            disabled={hasCompleted}
+                            style={{ background: 'linear-gradient(135deg, #4CAF50, #2E7D32)' }}
+                        >
+                            ✓ Done
+                        </button>
+                    ) : (
+                        <button
+                            className="nav-btn submit-btn"
+                            onClick={handleComplete}
+                            disabled={isSaving || hasCompleted}
+                        >
+                            {isSaving ? '⏳ Saving...' : translations.complete}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
