@@ -9,7 +9,8 @@ import DepartmentScreen from './components/DepartmentScreen.jsx';
 import TokenScreen from './components/TokenScreen.jsx';
 import StaffLogin from './components/Staff/StaffLogin.jsx';
 import StaffApp from './components/Staff/StaffApp.jsx';
-import LiveQueuePage from './components/LiveQueuePage.jsx'; // ADD THIS
+import LiveQueuePage from './components/LiveQueuePage.jsx';
+import DoctorInfo from './components/DoctorInfo.jsx'; // ADD THIS
 import './styles/App.css';
 
 // Create Language Context
@@ -140,13 +141,19 @@ const PatientApp = () => {
         <span className={`dot ${currentScreen === 5 ? 'active' : ''}`}></span>
       </div>
 
-      {/* ADD THIS: Live Queue Button */}
-      <div className="live-queue-button-container">
+      {/* Buttons Container */}
+      <div className="bottom-buttons">
         <button 
           className="live-queue-btn"
           onClick={() => window.location.href = '/live-queue'}
         >
-          📋 View Live Queue
+          📋 Live Queue
+        </button>
+        <button 
+          className="doctor-info-btn"
+          onClick={() => window.location.href = '/doctors'}
+        >
+          👨‍⚕️ Doctors
         </button>
       </div>
     </div>
@@ -303,7 +310,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<PatientApp />} />
-          <Route path="/live-queue" element={<LiveQueuePage />} /> {/* ADD THIS */}
+          <Route path="/live-queue" element={<LiveQueuePage />} />
+          <Route path="/doctors" element={<DoctorInfo />} /> {/* ADD THIS */}
           <Route path="/staff" element={<StaffLogin />} />
           <Route path="/staff/dashboard" element={<StaffApp />} />
           <Route path="*" element={<Navigate to="/" />} />
