@@ -32,7 +32,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     'women': 'Women'
   };
 
-  // Hindi name mapping for display
+  // Hindi name mapping for display and speech
   const departmentHindiMap = {
     'general': 'सामान्य',
     'dental': 'दंत',
@@ -46,6 +46,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     { 
       id: 'general', 
       englishName: 'General',
+      hindiName: 'सामान्य',
       imageSrc: generalImg,
       fallbackText: '🏥',
       color: '#4CAF50',
@@ -54,6 +55,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     { 
       id: 'dental', 
       englishName: 'Dental',
+      hindiName: 'दंत',
       imageSrc: dentalImg,
       fallbackText: '🦷',
       color: '#2196F3',
@@ -62,6 +64,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     { 
       id: 'eye', 
       englishName: 'Eye',
+      hindiName: 'नेत्र',
       imageSrc: eyeImg,
       fallbackText: '👁️',
       color: '#FF9800',
@@ -70,6 +73,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     { 
       id: 'bones', 
       englishName: 'Bones',
+      hindiName: 'हड्डी',
       imageSrc: boneImg,
       fallbackText: '🦴',
       color: '#9C27B0',
@@ -78,6 +82,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     { 
       id: 'child', 
       englishName: 'Child',
+      hindiName: 'बाल',
       imageSrc: childImg,
       fallbackText: '👶',
       color: '#E91E63',
@@ -86,6 +91,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     { 
       id: 'women', 
       englishName: 'Women',
+      hindiName: 'महिला',
       imageSrc: womenImg,
       fallbackText: '👩‍⚕️',
       color: '#F44336',
@@ -96,7 +102,15 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
   // Get display name based on language
   const getDisplayName = (dept) => {
     if (language === 'HI') {
-      return departmentHindiMap[dept.id] || dept.englishName;
+      return dept.hindiName || dept.englishName;
+    }
+    return dept.englishName;
+  };
+
+  // Get the name to speak based on language
+  const getSpeakName = (dept) => {
+    if (language === 'HI') {
+      return dept.hindiName || dept.englishName;
     }
     return dept.englishName;
   };
@@ -131,6 +145,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       setTimeout(() => {
         setIsSpeaking(true);
         const utterance = new SpeechSynthesisUtterance(text);
+        // Use the appropriate language for speech
         utterance.lang = languageVoiceMap[language] || 'en-US';
         utterance.rate = 0.9;
         utterance.pitch = 1;
@@ -145,7 +160,14 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     }
   };
 
-  // Check if patient already has a token in this department - FIXED with api
+  // Speak department name in the selected language
+  const speakDepartmentName = (dept) => {
+    const speakName = getSpeakName(dept);
+    const message = `${translations.youSelected} ${speakName}.`;
+    speakText(message);
+  };
+
+  // Check if patient already has a token in this department
   const checkExistingTokenForDepartment = async (dept) => {
     setIsChecking(true);
     
@@ -154,17 +176,15 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       const phoneNumber = patientData.phoneNumber;
       
       if (!phoneNumber) {
-        return true; // No phone number, proceed
+        return true;
       }
       
-      // Check if patient has existing token using api
       const response = await api.get(`/api/patients/phone/${phoneNumber}`);
       
       if (response.data.success && response.data.data) {
         const patient = response.data.data;
         
         if (patient.token) {
-          // Check if token is active
           const tokensResponse = await api.get('/api/tokens');
           
           if (tokensResponse.data.success) {
@@ -177,12 +197,13 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
               if (isActive && isToday) {
                 const existingDept = foundToken.department || patient.department_name || patient.department || 'General';
                 
-                // Check if the selected department matches the existing one
                 if (existingDept === dept.englishName) {
-                  // Same department - show token instead
-                  alert(`⚠️ You already have an active token (${patient.token}) for ${existingDept} department.\n\nPlease check your token.`);
+                  const alertMessage = language === 'HI' 
+                    ? `⚠️ आपके पास पहले से ही ${existingDept} विभाग के लिए एक सक्रिय टोकन (${patient.token}) है।\n\nकृपया अपना टोकन देखें।`
+                    : `⚠️ You already have an active token (${patient.token}) for ${existingDept} department.\n\nPlease check your token.`;
                   
-                  // Navigate to token screen
+                  alert(alertMessage);
+                  
                   onNext({ 
                     department: dept.id,
                     departmentName: dept.englishName,
@@ -190,15 +211,15 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
                     room: patient.room_number,
                     isExistingPatient: true
                   });
-                  return false; // Don't proceed
+                  return false;
                 } else {
-                  // Different department - ask if they want to switch
-                  const confirmSwitch = window.confirm(
-                    `You already have an active token (${patient.token}) for ${existingDept} department.\n\nDo you want to register for ${dept.englishName} department instead?`
-                  );
+                  const confirmMessage = language === 'HI'
+                    ? `आपके पास पहले से ही ${existingDept} विभाग के लिए एक सक्रिय टोकन (${patient.token}) है।\n\nक्या आप ${dept.englishName} विभाग के लिए पंजीकरण करना चाहते हैं?`
+                    : `You already have an active token (${patient.token}) for ${existingDept} department.\n\nDo you want to register for ${dept.englishName} department instead?`;
+                  
+                  const confirmSwitch = window.confirm(confirmMessage);
                   
                   if (!confirmSwitch) {
-                    // User wants to stay with existing department
                     onNext({ 
                       department: patient.department || existingDept,
                       departmentName: existingDept,
@@ -208,7 +229,6 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
                     });
                     return false;
                   }
-                  // User wants to switch - allow registration for new department
                   return true;
                 }
               }
@@ -217,7 +237,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
         }
       }
       
-      return true; // No existing token, proceed
+      return true;
       
     } catch (error) {
       console.error('Error checking existing token:', error);
@@ -237,25 +257,30 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       departmentName: dept.englishName
     }));
     
-    speakText(`${translations.youSelected} ${dept.englishName}.`);
+    // Speak the department name in the selected language
+    speakDepartmentName(dept);
   };
 
   const handleNotSure = () => {
     setSelectedDepartment(null);
-    speakText(translations.notSureMessage);
+    const message = language === 'HI' 
+      ? 'कृपया सहायता के लिए हेल्प डेस्क पर जाएं।'
+      : 'Please visit the help desk for assistance.';
+    speakText(message);
   };
 
   const handleSubmit = async () => {
     if (!selectedDepartment) {
-      alert(translations.pleaseSelectDepartment);
+      const message = language === 'HI'
+        ? 'कृपया एक विभाग चुनें'
+        : 'Please select a department';
+      alert(message);
       return;
     }
 
-    // Check if user already has a token in this department
     const canProceed = await checkExistingTokenForDepartment(selectedDepartment);
     
     if (canProceed) {
-      // Store in localStorage before navigating
       const patientData = JSON.parse(localStorage.getItem('patientData') || '{}');
       localStorage.setItem('patientData', JSON.stringify({
         ...patientData,
@@ -288,6 +313,22 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     setImageErrors(prev => ({ ...prev, [deptId]: true }));
   };
 
+  // Get the instruction text in the current language
+  const getInstructionText = () => {
+    if (language === 'HI') {
+      return '"आप किस विभाग में जाना चाहते हैं? चित्र पर टैप करें।"';
+    }
+    return `"${translations.departmentInstruction}"`;
+  };
+
+  // Get the "Hear Again" button text
+  const getHearAgainText = () => {
+    if (language === 'HI') {
+      return 'फिर से सुनें';
+    }
+    return translations.hearAgain;
+  };
+
   return (
     <div className="screen">
       <div className="header">
@@ -310,7 +351,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
               onClick={() => speakText(translations.departmentInstruction)}
               disabled={isSpeaking}
             >
-              {isSpeaking ? `🔊 ${translations.speaking}` : `🔊 ${translations.hearAgain}`}
+              {isSpeaking ? `🔊 ${translations.speaking}` : `🔊 ${getHearAgainText()}`}
             </button>
           </div>
         </div>
