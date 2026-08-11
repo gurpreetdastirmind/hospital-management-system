@@ -1,5 +1,5 @@
 // frontend/src/components/Staff/LiveQueue.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../../api';
 
 const LiveQueue = ({ tokens, departments, onRefresh }) => {
@@ -13,12 +13,47 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
   const [generating, setGenerating] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [callingDepartment, setCallingDepartment] = useState(null);
+  
+  // Use ref to prevent auto-refresh conflicts
+  const refreshIntervalRef = useRef(null);
+  const isRefreshingRef = useRef(false);
 
+  // Clean up interval on unmount
   useEffect(() => {
-    const interval = setInterval(() => {
-      onRefresh();
-    }, 5000);
-    return () => clearInterval(interval);
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Manual refresh with debounce
+  const handleManualRefresh = () => {
+    if (isRefreshingRef.current) return;
+    isRefreshingRef.current = true;
+    onRefresh();
+    setTimeout(() => {
+      isRefreshingRef.current = false;
+    }, 1000);
+  };
+
+  // Auto-refresh every 10 seconds (increased from 5 to avoid conflicts)
+  useEffect(() => {
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+    }
+    
+    refreshIntervalRef.current = setInterval(() => {
+      if (!isRefreshingRef.current) {
+        onRefresh();
+      }
+    }, 10000);
+    
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
   }, [onRefresh]);
 
   const getWaitingCount = (deptName) => {
@@ -73,20 +108,35 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
         alert(`✅ Token ${response.data.data.token_number} generated successfully!`);
         setNewToken({ name: '', phoneNumber: '', age: '', department: '' });
         setShowGenerateForm(false);
-        onRefresh();
+        
+        // Refresh immediately after generation
+        await onRefresh();
+        
+        // Force a second refresh after a short delay to ensure data consistency
+        setTimeout(() => {
+          onRefresh();
+        }, 500);
       } else {
         alert(response.data.error || 'Failed to generate token');
       }
     } catch (error) {
       console.error('Error generating token:', error);
-      alert('Error generating token');
+      alert('Error generating token. Please try again.');
     } finally {
       setGenerating(false);
     }
   };
 
   const handleCallNext = async (department) => {
+    // Prevent multiple calls
     if (callingDepartment === department) return;
+    
+    // Check if there are waiting tokens
+    const waitingCount = getWaitingCount(department);
+    if (waitingCount === 0) {
+      alert(`ℹ️ No waiting tokens for ${department}`);
+      return;
+    }
     
     setCallingDepartment(department);
     try {
@@ -98,7 +148,8 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
         } else {
           alert(`ℹ️ No waiting tokens for ${department}`);
         }
-        onRefresh();
+        // Refresh after calling
+        await onRefresh();
       } else {
         alert(response.data.error || 'Error calling next token');
       }
@@ -137,8 +188,12 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
           >
             {showGenerateForm ? '✕ Cancel' : '+ Generate Counter Token'}
           </button>
-          <button className="refresh-btn" onClick={onRefresh}>
-            🔄 Refresh
+          <button 
+            className="refresh-btn" 
+            onClick={handleManualRefresh}
+            disabled={isRefreshingRef.current}
+          >
+            {isRefreshingRef.current ? '🔄 Refreshing...' : '🔄 Refresh'}
           </button>
         </div>
       </div>
@@ -189,7 +244,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
               </select>
             </div>
             <button type="submit" disabled={generating}>
-              {generating ? 'Generating...' : 'Generate Token'}
+              {generating ? '⏳ Generating...' : 'Generate Token'}
             </button>
           </form>
         </div>
@@ -268,7 +323,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
                         cursor: waitingCount === 0 ? 'not-allowed' : 'pointer'
                       }}
                     >
-                      {isCalling ? 'Calling...' : 'Call Next'}
+                      {isCalling ? '⏳ Calling...' : '📢 Call Next'}
                     </button>
                   </div>
                 </div>
