@@ -955,3 +955,570 @@ h2 {
   }
 }
 
+/* frontend/src/styles/LiveQueuePage.css */
+
+.live-queue-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===== HOSPITAL HEADER ===== */
+.hospital-header {
+  background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+  color: white;
+  padding: 24px 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.hospital-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.hospital-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hospital-icon {
+  font-size: 48px;
+  animation: pulseIcon 3s ease-in-out infinite;
+}
+
+@keyframes pulseIcon {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.hospital-brand h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hospital-tagline {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.6);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.back-btn {
+  padding: 10px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* ===== HOSPITAL INFO BANNER ===== */
+.hospital-info-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.info-icon {
+  font-size: 24px;
+}
+
+.info-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.5);
+  display: block;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 600;
+  display: block;
+}
+
+.info-value.emergency-number {
+  color: #ff6b6b;
+  font-size: 16px;
+}
+
+.info-value.available {
+  color: #51cf66;
+}
+
+.info-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== EMERGENCY SERVICES ===== */
+.emergency-services {
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 12px;
+  padding: 16px 20px;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.emergency-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #ff6b6b;
+}
+
+.emergency-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.emergency-tag {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===== QUEUE SECTION ===== */
+.queue-section {
+  padding: 24px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.queue-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.queue-section-header h2 {
+  font-size: 24px;
+  color: #1a2332;
+  margin: 0;
+}
+
+.queue-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stat-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.stat-badge.waiting {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.stat-badge.called {
+  background: #e3f2fd;
+  color: #0d47a1;
+}
+
+.stat-badge.completed {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.stat-badge.total {
+  background: #f3e5f5;
+  color: #4a148c;
+}
+
+/* ===== DEPARTMENT FILTER ===== */
+.department-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.filter-btn {
+  padding: 8px 20px;
+  border: 2px solid #e8ecf0;
+  border-radius: 20px;
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.filter-btn.active {
+  border-color: #667eea;
+  background: #667eea;
+  color: white;
+}
+
+/* ===== DEPARTMENT CARDS ===== */
+.department-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.dept-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  border-left: 4px solid #667eea;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.dept-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.dept-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.dept-card-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dept-icon-large {
+  font-size: 32px;
+}
+
+.dept-card-info h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #1a2332;
+}
+
+.dept-room {
+  font-size: 12px;
+  color: #6b7a8f;
+}
+
+.dept-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.dept-status.open {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.dept-status.closed {
+  background: #fdeaea;
+  color: #c62828;
+}
+
+.dept-card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid #f0f4f8;
+  border-bottom: 1px solid #f0f4f8;
+}
+
+.dept-waiting {
+  text-align: center;
+}
+
+.waiting-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a2332;
+  display: block;
+}
+
+.waiting-label {
+  font-size: 12px;
+  color: #6b7a8f;
+}
+
+.dept-current-token {
+  text-align: center;
+}
+
+.current-token-label {
+  font-size: 11px;
+  color: #6b7a8f;
+  display: block;
+}
+
+.current-token-number {
+  font-size: 28px;
+  font-weight: 700;
+  display: block;
+}
+
+.no-token {
+  font-size: 13px;
+  color: #b0b0b0;
+}
+
+.dept-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #6b7a8f;
+}
+
+.token-status {
+  font-weight: 600;
+  padding: 4px 12px;
+  background: #f0f4f8;
+  border-radius: 12px;
+}
+
+/* ===== LOADING & EMPTY STATES ===== */
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7a8f;
+  font-size: 18px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7a8f;
+  font-size: 18px;
+}
+
+/* ===== HOSPITAL FOOTER ===== */
+.hospital-footer {
+  background: #1a2332;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 40px 32px 20px;
+  margin-top: 32px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.footer-section h4 {
+  color: white;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.footer-section p {
+  margin: 6px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.emergency-contact {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+.ambulance-contact {
+  color: #ffa94d;
+  font-weight: 600;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .hospital-info-banner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .info-divider {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .hospital-header {
+    padding: 16px 20px;
+  }
+  
+  .hospital-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .hospital-brand h1 {
+    font-size: 22px;
+  }
+  
+  .hospital-info-banner {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .queue-section {
+    padding: 16px 20px;
+  }
+  
+  .queue-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .department-cards-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .hospital-header {
+    padding: 12px 16px;
+  }
+  
+  .hospital-brand {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .hospital-icon {
+    font-size: 36px;
+  }
+  
+  .hospital-brand h1 {
+    font-size: 18px;
+  }
+  
+  .emergency-grid {
+    flex-direction: column;
+  }
+  
+  .department-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .queue-stats {
+    flex-wrap: wrap;
+  }
+  
+  .stat-badge {
+    font-size: 11px;
+    padding: 4px 12px;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .back-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* frontend/src/styles/App.css */
+
+/* Live Queue Button */
+.live-queue-button-container {
+  text-align: center;
+  margin-top: 16px;
+  padding: 8px 0;
+}
+
+.live-queue-btn {
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(238, 90, 36, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-queue-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(238, 90, 36, 0.5);
+}
+
+.live-queue-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Make sure the live queue button is below the progress indicator */
+.screen-container + .progress-indicator + .live-queue-button-container {
+  margin-top: 20px;
+}

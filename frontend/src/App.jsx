@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import React, { useState, createContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LanguageScreen from './components/LanguageScreen.jsx';
@@ -8,6 +9,7 @@ import DepartmentScreen from './components/DepartmentScreen.jsx';
 import TokenScreen from './components/TokenScreen.jsx';
 import StaffLogin from './components/Staff/StaffLogin.jsx';
 import StaffApp from './components/Staff/StaffApp.jsx';
+import LiveQueuePage from './components/LiveQueuePage.jsx'; // ADD THIS
 import './styles/App.css';
 
 // Create Language Context
@@ -44,7 +46,6 @@ const PatientApp = () => {
   };
 
   const handleBack = () => {
-    // If existing patient, go back to phone screen instead of department
     if (patientData.isExistingPatient && currentScreen === 5) {
       setCurrentScreen(1);
       return;
@@ -62,8 +63,6 @@ const PatientApp = () => {
     };
     setPatientData(updatedData);
     localStorage.setItem('patientData', JSON.stringify(updatedData));
-    
-    // Directly go to TokenScreen (index 5)
     setCurrentScreen(5);
   };
 
@@ -139,6 +138,16 @@ const PatientApp = () => {
         <span className={`dot ${currentScreen === 3 ? 'active' : ''}`}></span>
         <span className={`dot ${currentScreen === 4 ? 'active' : ''}`}></span>
         <span className={`dot ${currentScreen === 5 ? 'active' : ''}`}></span>
+      </div>
+
+      {/* ADD THIS: Live Queue Button */}
+      <div className="live-queue-button-container">
+        <button 
+          className="live-queue-btn"
+          onClick={() => window.location.href = '/live-queue'}
+        >
+          📋 View Live Queue
+        </button>
       </div>
     </div>
   );
@@ -294,6 +303,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<PatientApp />} />
+          <Route path="/live-queue" element={<LiveQueuePage />} /> {/* ADD THIS */}
           <Route path="/staff" element={<StaffLogin />} />
           <Route path="/staff/dashboard" element={<StaffApp />} />
           <Route path="*" element={<Navigate to="/" />} />
