@@ -61,7 +61,6 @@ const StaffLogin = () => {
           <div className="form-group">
             <label>Email Address</label>
             <div className="input-wrapper">
-              <span className="input-icon">📧</span>
               <input
                 type="email"
                 placeholder="Enter your email"
@@ -76,7 +75,6 @@ const StaffLogin = () => {
           <div className="form-group">
             <label>Password</label>
             <div className="input-wrapper">
-              <span className="input-icon">🔒</span>
               <input
                 type="password"
                 placeholder="Enter your password"
