@@ -955,3 +955,204 @@ h2 {
   }
 }
 
+/* Add to frontend/src/styles/App.css */
+
+/* Hospital Info Footer */
+.hospital-info-footer {
+  width: 100%;
+  max-width: 480px;
+  margin-top: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hospital-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hospital-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.hospital-info-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.hospital-info-item .info-icon {
+  font-size: 14px;
+}
+
+.hospital-info-item .info-text {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.hospital-info-item.emergency {
+  background: rgba(231, 76, 60, 0.3);
+  padding: 2px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(231, 76, 60, 0.4);
+}
+
+.emergency-text {
+  color: #ff6b6b;
+  font-weight: 700;
+  animation: pulseEmergency 2s infinite;
+}
+
+@keyframes pulseEmergency {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive adjustments for hospital info */
+@media (max-width: 480px) {
+  .hospital-info-footer {
+    padding: 8px 12px;
+    border-radius: 12px;
+  }
+  
+  .hospital-info-row {
+    gap: 2px 8px;
+  }
+  
+  .hospital-info-item {
+    font-size: 9px;
+  }
+  
+  .hospital-info-item .info-icon {
+    font-size: 11px;
+  }
+  
+  .hospital-info-item .info-text {
+    font-size: 9px;
+  }
+  
+  .hospital-info-item.emergency {
+    padding: 1px 6px;
+  }
+}
+
+@media (max-width: 380px) {
+  .hospital-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  
+  .hospital-info-item {
+    font-size: 8px;
+  }
+  
+  .hospital-info-item .info-text {
+    font-size: 8px;
+  }
+}
+
+/* Make sure app container can accommodate footer */
+.app {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  flex-direction: column;
+}
+
+.screen-container {
+  width: 100%;
+  max-width: 480px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  position: relative;
+  min-height: 500px;
+}
+
+/* Emergency Contact Button - Floating */
+.emergency-floating-btn {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(231, 76, 60, 0.5);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bounceEmergency 2s infinite;
+}
+
+.emergency-floating-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(231, 76, 60, 0.7);
+}
+
+@keyframes bounceEmergency {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@media (max-width: 480px) {
+  .emergency-floating-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    bottom: 80px;
+    right: 16px;
+  }
+}
+
+/* Tooltip for emergency button */
+.emergency-floating-btn::after {
+  content: 'Emergency';
+  position: absolute;
+  right: 70px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.emergency-floating-btn:hover::after {
+  opacity: 1;
+  right: 65px;
+}
