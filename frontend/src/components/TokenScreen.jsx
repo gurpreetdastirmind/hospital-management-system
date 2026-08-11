@@ -391,16 +391,20 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
         }
     };
 
-    // Handle Done button for Quick Token flow
+    // Handle Done button for Quick Token flow - FIXED: Don't try to save again
     const handleQuickTokenDone = () => {
+        // Just complete the flow without any API calls
         setHasCompleted(true);
         speakText(translations.registrationComplete);
+        
         onNext({ 
             token: token,
             room: room,
             departmentName: departmentName,
             completed: true 
         });
+        
+        // Clear localStorage after showing completion
         localStorage.removeItem('patientData');
         
         let message = `✅ Registration Complete! Your token is ${token} for ${departmentName} department.`;
