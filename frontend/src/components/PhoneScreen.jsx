@@ -152,12 +152,10 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
       
     } catch (error) {
       console.error('Error checking patient:', error);
-      // If patient not found (404), continue to registration
       if (error.response?.status === 404) {
         console.log('📝 New patient - proceeding to registration');
         return false;
       }
-      // For other errors, ask user if they want to continue
       const continueAnyway = window.confirm(
         'Could not check existing records. Would you like to continue with registration?'
       );
@@ -215,7 +213,6 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
           }
         }
       } catch (checkError) {
-        // 404 means patient doesn't exist - that's fine, we'll create new
         if (checkError.response?.status !== 404) {
           console.error('Error checking patient:', checkError);
         }
@@ -228,6 +225,7 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
         const patientName = patientData.name || 'Patient';
         const patientAge = patientData.age || null;
         
+        // Step 1: Generate token
         const tokenResponse = await api.post('/api/tokens/generate', {
           name: patientName,
           phoneNumber: phone,
@@ -239,17 +237,19 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
         if (tokenResponse.data.success) {
           const tokenData = tokenResponse.data.data;
           
-          // Save to patients table
-          await api.post('/api/patients/save', {
-            language: patientData.language || 'EN',
-            phoneNumber: phone,
+          // Step 2: Save patient with the token - FIXED FIELD NAMES
+          const saveResponse = await api.post('/api/patients/save', {
+            phoneNumber: phone,  // Use phoneNumber (matches backend)
             name: patientName,
-            age: patientAge,
+            age: patientAge || null,
             department: 'General Medicine',
             departmentName: 'General Medicine',
             token: tokenData.token_number,
-            roomNumber: tokenData.room_number
+            roomNumber: tokenData.room_number,
+            language: patientData.language || 'EN'
           });
+
+          console.log('📝 Save response:', saveResponse.data);
 
           // Update localStorage
           localStorage.setItem('patientData', JSON.stringify({
@@ -260,7 +260,8 @@ const PhoneScreen = ({ onNext, onBack, phoneNumber, onTokenFound }) => {
             department: 'General Medicine',
             departmentName: 'General Medicine',
             token: tokenData.token_number,
-            room: tokenData.room_number
+            room: tokenData.room_number,
+            tokenStatus: tokenData.status
           }));
 
           alert(`✅ Quick Token Generated!\n\nToken: ${tokenData.token_number}\nDepartment: General Medicine\nRoom: ${tokenData.room_number}\nStatus: ${tokenData.status.toUpperCase()}`);
