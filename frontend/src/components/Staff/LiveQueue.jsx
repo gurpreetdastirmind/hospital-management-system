@@ -17,6 +17,8 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
   // Use ref to prevent auto-refresh conflicts
   const refreshIntervalRef = useRef(null);
   const isRefreshingRef = useRef(false);
+  const isGeneratingRef = useRef(false);
+  const isCallingRef = useRef(false);
 
   // Clean up interval on unmount
   useEffect(() => {
@@ -29,7 +31,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
 
   // Manual refresh with debounce
   const handleManualRefresh = () => {
-    if (isRefreshingRef.current) return;
+    if (isRefreshingRef.current || isGeneratingRef.current || isCallingRef.current) return;
     isRefreshingRef.current = true;
     onRefresh();
     setTimeout(() => {
@@ -37,14 +39,15 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
     }, 1000);
   };
 
-  // Auto-refresh every 10 seconds (increased from 5 to avoid conflicts)
+  // Auto-refresh every 10 seconds - BUT NOT during operations
   useEffect(() => {
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current);
     }
     
     refreshIntervalRef.current = setInterval(() => {
-      if (!isRefreshingRef.current) {
+      // Don't auto-refresh during generation or calling
+      if (!isRefreshingRef.current && !isGeneratingRef.current && !isCallingRef.current) {
         onRefresh();
       }
     }, 10000);
@@ -96,7 +99,10 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
       return;
     }
 
+    // Set generating flag to prevent auto-refresh
+    isGeneratingRef.current = true;
     setGenerating(true);
+
     try {
       const response = await api.post('/api/tokens/generate', {
         ...newToken,
@@ -113,16 +119,21 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
         await onRefresh();
         
         // Force a second refresh after a short delay to ensure data consistency
-        setTimeout(() => {
-          onRefresh();
+        setTimeout(async () => {
+          await onRefresh();
+          // Reset generating flag after all refreshes are complete
+          isGeneratingRef.current = false;
+          setGenerating(false);
         }, 500);
       } else {
         alert(response.data.error || 'Failed to generate token');
+        isGeneratingRef.current = false;
+        setGenerating(false);
       }
     } catch (error) {
       console.error('Error generating token:', error);
       alert('Error generating token. Please try again.');
-    } finally {
+      isGeneratingRef.current = false;
       setGenerating(false);
     }
   };
@@ -138,7 +149,10 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
       return;
     }
     
+    // Set calling flag to prevent auto-refresh
+    isCallingRef.current = true;
     setCallingDepartment(department);
+    
     try {
       const response = await api.post('/api/tokens/call-next', { department });
 
@@ -158,6 +172,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
       alert('Error calling next token. Please try again.');
     } finally {
       setCallingDepartment(null);
+      isCallingRef.current = false;
     }
   };
 
@@ -185,13 +200,14 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
           <button 
             className="generate-btn"
             onClick={() => setShowGenerateForm(!showGenerateForm)}
+            disabled={generating || isCallingRef.current}
           >
             {showGenerateForm ? '✕ Cancel' : '+ Generate Counter Token'}
           </button>
           <button 
             className="refresh-btn" 
             onClick={handleManualRefresh}
-            disabled={isRefreshingRef.current}
+            disabled={isRefreshingRef.current || generating || isCallingRef.current}
           >
             {isRefreshingRef.current ? '🔄 Refreshing...' : '🔄 Refresh'}
           </button>
@@ -210,6 +226,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
                 value={newToken.name}
                 onChange={(e) => setNewToken({...newToken, name: e.target.value})}
                 required
+                disabled={generating}
               />
             </div>
             <div className="form-group">
@@ -219,6 +236,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
                 value={newToken.phoneNumber}
                 onChange={(e) => setNewToken({...newToken, phoneNumber: e.target.value})}
                 required
+                disabled={generating}
               />
             </div>
             <div className="form-group">
@@ -227,6 +245,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
                 placeholder="Age"
                 value={newToken.age}
                 onChange={(e) => setNewToken({...newToken, age: e.target.value})}
+                disabled={generating}
               />
             </div>
             <div className="form-group">
@@ -234,6 +253,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
                 value={newToken.department}
                 onChange={(e) => setNewToken({...newToken, department: e.target.value})}
                 required
+                disabled={generating}
               >
                 <option value="">Select Department *</option>
                 {departments.filter(d => d.is_open === 1).map(dept => (
@@ -256,6 +276,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
           <button 
             className={`filter-btn ${selectedDepartment === 'all' ? 'active' : ''}`}
             onClick={() => setSelectedDepartment('all')}
+            disabled={generating || isCallingRef.current}
           >
             All Departments
           </button>
@@ -267,6 +288,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
                 className={`filter-btn ${selectedDepartment === dept.name ? 'active' : ''}`}
                 onClick={() => setSelectedDepartment(dept.name)}
                 style={{ borderColor: getDepartmentColor(dept.name) }}
+                disabled={generating || isCallingRef.current}
               >
                 {dept.name} ({waitingCount} waiting)
               </button>
@@ -317,10 +339,10 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
                     <button 
                       className="call-next-btn"
                       onClick={() => handleCallNext(deptName)}
-                      disabled={isCalling || waitingCount === 0}
+                      disabled={isCalling || waitingCount === 0 || generating || isCallingRef.current}
                       style={{ 
-                        backgroundColor: waitingCount === 0 ? '#ccc' : color,
-                        cursor: waitingCount === 0 ? 'not-allowed' : 'pointer'
+                        backgroundColor: (waitingCount === 0 || generating || isCallingRef.current) ? '#ccc' : color,
+                        cursor: (waitingCount === 0 || generating || isCallingRef.current) ? 'not-allowed' : 'pointer'
                       }}
                     >
                       {isCalling ? '⏳ Calling...' : '📢 Call Next'}
