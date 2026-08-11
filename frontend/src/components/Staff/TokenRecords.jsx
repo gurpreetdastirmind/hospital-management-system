@@ -23,7 +23,9 @@ const TokenRecords = ({ tokens, onRefresh }) => {
     .filter(token => 
       token.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       token.token_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      token.phone_number?.includes(searchTerm)
+      token.phone_number?.includes(searchTerm) ||
+      token.doctor?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      token.department?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
   const getSourceBadge = (source) => {
@@ -77,7 +79,7 @@ const TokenRecords = ({ tokens, onRefresh }) => {
         <div className="search-box">
           <input
             type="text"
-            placeholder="🔍 Search by name, token, or phone..."
+            placeholder="🔍 Search by name, token, phone, doctor, or department..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -94,6 +96,7 @@ const TokenRecords = ({ tokens, onRefresh }) => {
               <th>Phone</th>
               <th>Department</th>
               <th>Room</th>
+              <th>Doctor</th>
               <th>Source</th>
               <th>Status</th>
               <th>Time</th>
@@ -102,7 +105,7 @@ const TokenRecords = ({ tokens, onRefresh }) => {
           <tbody>
             {filteredTokens.length === 0 ? (
               <tr>
-                <td colSpan="9" className="no-records">
+                <td colSpan="10" className="no-records">
                   No records found
                 </td>
               </tr>
@@ -113,8 +116,17 @@ const TokenRecords = ({ tokens, onRefresh }) => {
                   <td className="name-cell">{token.patient_name}</td>
                   <td>{token.age || 'N/A'}</td>
                   <td>{token.phone_number}</td>
-                  <td>{token.department}</td>
+                  <td>
+                    <span className="department-tag">{token.department}</span>
+                  </td>
                   <td>{token.room_number || 'N/A'}</td>
+                  <td>
+                    {token.doctor ? (
+                      <span className="doctor-tag">👨‍⚕️ {token.doctor}</span>
+                    ) : (
+                      <span className="no-doctor">—</span>
+                    )}
+                  </td>
                   <td>{getSourceBadge(token.source)}</td>
                   <td>
                     <span className={getStatusClass(token.status)}>

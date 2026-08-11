@@ -8,17 +8,53 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
     name: '',
     phoneNumber: '',
     age: '',
-    department: ''
+    department: '',
+    doctor: ''
   });
   const [generating, setGenerating] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [callingDepartment, setCallingDepartment] = useState(null);
+  const [doctors, setDoctors] = useState([]);
+  const [availableDoctors, setAvailableDoctors] = useState([]);
   
   // Use ref to prevent auto-refresh conflicts
   const refreshIntervalRef = useRef(null);
   const isRefreshingRef = useRef(false);
   const isGeneratingRef = useRef(false);
   const isCallingRef = useRef(false);
+
+  // Fetch doctors
+  const fetchDoctors = async () => {
+    try {
+      const response = await api.get('/api/doctors');
+      if (response.data.success) {
+        setDoctors(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching doctors:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
+
+  // Update available doctors when department changes
+  useEffect(() => {
+    if (newToken.department) {
+      const filtered = doctors.filter(d => 
+        d.department === newToken.department && d.status === 'active'
+      );
+      setAvailableDoctors(filtered);
+      // Reset doctor selection if current selection is not available
+      if (newToken.doctor && !filtered.some(d => d.name === newToken.doctor)) {
+        setNewToken(prev => ({ ...prev, doctor: '' }));
+      }
+    } else {
+      setAvailableDoctors([]);
+      setNewToken(prev => ({ ...prev, doctor: '' }));
+    }
+  }, [newToken.department, doctors]);
 
   // Clean up interval on unmount
   useEffect(() => {
@@ -34,6 +70,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
     if (isRefreshingRef.current || isGeneratingRef.current || isCallingRef.current) return;
     isRefreshingRef.current = true;
     onRefresh();
+    fetchDoctors();
     setTimeout(() => {
       isRefreshingRef.current = false;
     }, 1000);
@@ -49,6 +86,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
       // Don't auto-refresh during generation or calling
       if (!isRefreshingRef.current && !isGeneratingRef.current && !isCallingRef.current) {
         onRefresh();
+        fetchDoctors();
       }
     }, 10000);
     
@@ -92,6 +130,19 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
     return dept?.color || '#4a90d9';
   };
 
+  const getDepartmentDoctor = (deptName) => {
+    const activeDoctors = doctors.filter(d => 
+      d.department === deptName && d.status === 'active'
+    );
+    if (activeDoctors.length === 0) return null;
+    return activeDoctors[0]; // Return first active doctor
+  };
+
+  const getDoctorName = (deptName) => {
+    const doctor = getDepartmentDoctor(deptName);
+    return doctor ? doctor.name : 'No doctor assigned';
+  };
+
   const handleGenerateToken = async (e) => {
     e.preventDefault();
     if (!newToken.name || !newToken.phoneNumber || !newToken.department) {
@@ -107,20 +158,23 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
       const response = await api.post('/api/tokens/generate', {
         ...newToken,
         source: 'Counter',
-        age: newToken.age || null
+        age: newToken.age || null,
+        doctor: newToken.doctor || null
       });
 
       if (response.data.success) {
         alert(`✅ Token ${response.data.data.token_number} generated successfully!`);
-        setNewToken({ name: '', phoneNumber: '', age: '', department: '' });
+        setNewToken({ name: '', phoneNumber: '', age: '', department: '', doctor: '' });
         setShowGenerateForm(false);
         
         // Refresh immediately after generation
         await onRefresh();
+        await fetchDoctors();
         
         // Force a second refresh after a short delay to ensure data consistency
         setTimeout(async () => {
           await onRefresh();
+          await fetchDoctors();
           // Reset generating flag after all refreshes are complete
           isGeneratingRef.current = false;
           setGenerating(false);
@@ -164,6 +218,7 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
         }
         // Refresh after calling
         await onRefresh();
+        await fetchDoctors();
       } else {
         alert(response.data.error || 'Error calling next token');
       }
@@ -251,19 +306,37 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
             <div className="form-group">
               <select
                 value={newToken.department}
-                onChange={(e) => setNewToken({...newToken, department: e.target.value})}
+                onChange={(e) => setNewToken({...newToken, department: e.target.value, doctor: ''})}
                 required
                 disabled={generating}
               >
                 <option value="">Select Department *</option>
                 {departments.filter(d => d.is_open === 1).map(dept => (
                   <option key={dept.id} value={dept.name}>
-                    {dept.name}
+                    {dept.name} - {dept.room}
                   </option>
                 ))}
               </select>
             </div>
-            <button type="submit" disabled={generating}>
+            <div className="form-group">
+              <select
+                value={newToken.doctor}
+                onChange={(e) => setNewToken({...newToken, doctor: e.target.value})}
+                required
+                disabled={generating || !newToken.department}
+              >
+                <option value="">Select Doctor *</option>
+                {availableDoctors.map(doctor => (
+                  <option key={doctor.id} value={doctor.name}>
+                    {doctor.name} - {doctor.specialization}
+                  </option>
+                ))}
+                {availableDoctors.length === 0 && newToken.department && (
+                  <option value="" disabled>No active doctors in this department</option>
+                )}
+              </select>
+            </div>
+            <button type="submit" disabled={generating || !newToken.doctor}>
               {generating ? '⏳ Generating...' : 'Generate Token'}
             </button>
           </form>
@@ -312,6 +385,8 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
             const isCalling = callingDepartment === deptName;
             const color = getDepartmentColor(deptName);
             const room = getDepartmentRoom(deptName);
+            const doctorName = getDoctorName(deptName);
+            const assignedDoctor = getDepartmentDoctor(deptName);
             
             // Show token: called token first, then waiting token
             const displayToken = calledToken || waitingToken;
@@ -348,6 +423,18 @@ const LiveQueue = ({ tokens, departments, onRefresh }) => {
                       {isCalling ? '⏳ Calling...' : '📢 Call Next'}
                     </button>
                   </div>
+                </div>
+                {/* Doctor info */}
+                <div className="dept-card-doctor">
+                  <span className="doctor-label">👨‍⚕️ Doctor:</span>
+                  <span className="doctor-name" style={{ color: assignedDoctor ? color : '#999' }}>
+                    {doctorName}
+                  </span>
+                  {assignedDoctor && (
+                    <span className="doctor-specialization">
+                      ({assignedDoctor.specialization})
+                    </span>
+                  )}
                 </div>
               </div>
             );
