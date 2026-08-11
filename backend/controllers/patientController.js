@@ -1,7 +1,7 @@
-const Patient = require('../models/Patient');
-const { runQuery } = require('../database');
+// backend/controllers/patientController.js
+const { runQuery, getQuery, allQuery } = require('../database');
 
-// Generate random token
+// Generate random token (fallback)
 const generateToken = () => {
   const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
   const letter = letters[Math.floor(Math.random() * letters.length)];
@@ -9,13 +9,12 @@ const generateToken = () => {
   return `${letter}-${number}`;
 };
 
-// Generate random room number
+// Generate random room number (fallback)
 const generateRoom = () => {
   return Math.floor(Math.random() * 20) + 1;
 };
 
 // Save patient data
-// In patientController.js, modify the savePatient function
 const savePatient = async (req, res, next) => {
   try {
     const { 
@@ -25,9 +24,11 @@ const savePatient = async (req, res, next) => {
       age, 
       department, 
       departmentName,
-      token,      // ← Add this
-      roomNumber  // ← Add this
+      token,
+      roomNumber
     } = req.body;
+
+    console.log('📝 Saving patient with data:', { phoneNumber, name, age, department, departmentName, token, roomNumber });
 
     // Validate required fields
     if (!phoneNumber) {
@@ -44,19 +45,11 @@ const savePatient = async (req, res, next) => {
       });
     }
 
-    // Use the token from frontend if provided, otherwise generate new one
-    let finalToken = token;
-    let finalRoom = roomNumber;
+    // Use the token from frontend if provided, otherwise generate new ones
+    let finalToken = token || generateToken();
+    let finalRoom = roomNumber || generateRoom();
 
-    // If token not provided, generate new ones (for backward compatibility)
-    if (!finalToken) {
-      finalToken = generateToken();
-    }
-    if (!finalRoom) {
-      finalRoom = generateRoom();
-    }
-
-    // IMPORTANT: Use departmentName as the display name
+    // Get department display name
     let deptDisplayName = departmentName || department || 'General';
     
     const deptMap = {
@@ -72,45 +65,56 @@ const savePatient = async (req, res, next) => {
       deptDisplayName = deptMap[department.toLowerCase()];
     }
 
-    console.log('Saving with token:', finalToken);
-    console.log('Saving with room:', finalRoom);
-    console.log('Saving with department:', deptDisplayName);
+    console.log('✅ Saving with token:', finalToken);
+    console.log('✅ Saving with room:', finalRoom);
+    console.log('✅ Saving with department:', deptDisplayName);
 
-    // Prepare patient data
-    const patientData = {
+    // Insert into patients table
+    const patientSql = `
+      INSERT INTO patients (
+        phone_number, name, age, department, department_name, 
+        token, room_number, language, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `;
+    
+    const patientResult = await runQuery(patientSql, [
       phoneNumber,
       name,
-      age: age || null,
-      department: department || deptDisplayName,
-      departmentName: deptDisplayName,
-      token: finalToken,      // ← Use the frontend token
-      roomNumber: finalRoom,  // ← Use the frontend room
-      language: language || 'EN'
-    };
+      age || null,
+      department || deptDisplayName,
+      deptDisplayName,
+      finalToken,
+      finalRoom,
+      language || 'EN'
+    ]);
 
-    // Save patient to patients table
-    const patientId = await Patient.save(patientData);
+    const patientId = patientResult.lastID || patientResult.lastInsertRowid;
 
-    // ALSO save to tokens table for staff portal
+    // Also save to tokens table for staff portal
     const tokenSql = `
       INSERT INTO tokens (
         token_number, patient_name, phone_number, age, department, 
-        room_number, source, status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'waiting', CURRENT_TIMESTAMP)
+        room_number, source, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'waiting', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `;
     
     await runQuery(tokenSql, [
-      finalToken,       // ← Use the same token
+      finalToken,
       name,
       phoneNumber,
       age || null,
       deptDisplayName,
-      finalRoom,        // ← Use the same room
+      finalRoom,
       'App'
     ]);
 
     // Get the saved patient
-    const savedPatient = await Patient.findById(patientId);
+    const savedPatient = await getQuery(
+      `SELECT * FROM patients WHERE id = ?`,
+      [patientId]
+    );
+
+    console.log('✅ Patient saved successfully:', savedPatient);
 
     res.status(201).json({
       success: true,
@@ -123,8 +127,11 @@ const savePatient = async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.error('Error in savePatient:', error);
-    next(error);
+    console.error('❌ Error in savePatient:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to save patient'
+    });
   }
 };
 
@@ -132,7 +139,10 @@ const savePatient = async (req, res, next) => {
 const getPatient = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const patient = await Patient.findById(id);
+    const patient = await getQuery(
+      `SELECT * FROM patients WHERE id = ?`,
+      [id]
+    );
 
     if (!patient) {
       return res.status(404).json({
@@ -155,14 +165,23 @@ const getPatient = async (req, res, next) => {
 const getPatientByPhone = async (req, res, next) => {
   try {
     const { phone } = req.params;
-    const patient = await Patient.findByPhone(phone);
+    
+    console.log(`🔍 Looking for patient with phone: ${phone}`);
+    
+    const patient = await getQuery(
+      `SELECT * FROM patients WHERE phone_number = ?`,
+      [phone]
+    );
 
     if (!patient) {
+      console.log(`❌ Patient not found with phone: ${phone}`);
       return res.status(404).json({
         success: false,
         error: 'Patient not found'
       });
     }
+
+    console.log(`✅ Found patient:`, patient);
 
     res.json({
       success: true,
@@ -178,7 +197,12 @@ const getPatientByPhone = async (req, res, next) => {
 const getAllPatients = async (req, res, next) => {
   try {
     const { limit = 100, offset = 0 } = req.query;
-    const patients = await Patient.findAll(parseInt(limit), parseInt(offset));
+    
+    const patients = await allQuery(`
+      SELECT * FROM patients 
+      ORDER BY created_at DESC 
+      LIMIT ? OFFSET ?
+    `, [parseInt(limit), parseInt(offset)]);
     
     res.json({
       success: true,
@@ -199,27 +223,70 @@ const getAllPatients = async (req, res, next) => {
 const updatePatient = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const { name, age, department, department_name, phone_number, language, status } = req.body;
 
     // Check if patient exists
-    const existingPatient = await Patient.findById(id);
-    if (!existingPatient) {
+    const existing = await getQuery(
+      `SELECT * FROM patients WHERE id = ?`,
+      [id]
+    );
+    
+    if (!existing) {
       return res.status(404).json({
         success: false,
         error: 'Patient not found'
       });
     }
 
-    const changes = await Patient.update(id, updateData);
-    
-    if (changes === 0) {
+    const updates = [];
+    const params = [];
+
+    if (name) {
+      updates.push('name = ?');
+      params.push(name);
+    }
+    if (age !== undefined) {
+      updates.push('age = ?');
+      params.push(age);
+    }
+    if (department) {
+      updates.push('department = ?');
+      params.push(department);
+    }
+    if (department_name) {
+      updates.push('department_name = ?');
+      params.push(department_name);
+    }
+    if (phone_number) {
+      updates.push('phone_number = ?');
+      params.push(phone_number);
+    }
+    if (language) {
+      updates.push('language = ?');
+      params.push(language);
+    }
+    if (status) {
+      updates.push('status = ?');
+      params.push(status);
+    }
+
+    if (updates.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'No changes made'
+        error: 'No fields to update'
       });
     }
 
-    const updatedPatient = await Patient.findById(id);
+    updates.push('updated_at = CURRENT_TIMESTAMP');
+    params.push(id);
+
+    const sql = `UPDATE patients SET ${updates.join(', ')} WHERE id = ?`;
+    await runQuery(sql, params);
+
+    const updatedPatient = await getQuery(
+      `SELECT * FROM patients WHERE id = ?`,
+      [id]
+    );
 
     res.json({
       success: true,
@@ -238,22 +305,22 @@ const deletePatient = async (req, res, next) => {
     const { id } = req.params;
 
     // Check if patient exists
-    const existingPatient = await Patient.findById(id);
-    if (!existingPatient) {
+    const existing = await getQuery(
+      `SELECT * FROM patients WHERE id = ?`,
+      [id]
+    );
+    
+    if (!existing) {
       return res.status(404).json({
         success: false,
         error: 'Patient not found'
       });
     }
 
-    const changes = await Patient.delete(id);
-    
-    if (changes === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Patient could not be deleted'
-      });
-    }
+    await runQuery(
+      `DELETE FROM patients WHERE id = ?`,
+      [id]
+    );
 
     res.json({
       success: true,
@@ -268,7 +335,15 @@ const deletePatient = async (req, res, next) => {
 // Get patient statistics
 const getStats = async (req, res, next) => {
   try {
-    const stats = await Patient.getStats();
+    const stats = await getQuery(`
+      SELECT 
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'active' THEN 1 END) as active,
+        COUNT(CASE WHEN status = 'inactive' THEN 1 END) as inactive,
+        COUNT(DISTINCT department) as departments
+      FROM patients
+    `);
+    
     res.json({
       success: true,
       data: stats
