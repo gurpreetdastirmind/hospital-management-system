@@ -1,8 +1,39 @@
+// backend/controllers/tokenController.js
 const { db, runQuery, getQuery, allQuery } = require('../database');
 
-// Generate token number
+// Generate token number - FIXED with proper prefix mapping
 const generateTokenNumber = async (department) => {
   const today = new Date().toISOString().split('T')[0];
+  
+  // Get the department's token prefix from the departments table
+  const deptInfo = await getQuery(
+    `SELECT token_prefix FROM departments WHERE name = ?`,
+    [department]
+  );
+  
+  let prefix = department.substring(0, 1).toUpperCase();
+  
+  // Use the department's token_prefix if available
+  if (deptInfo && deptInfo.token_prefix) {
+    prefix = deptInfo.token_prefix;
+  } else {
+    // Fallback mapping for departments
+    const prefixMap = {
+      'General Medicine': 'G',
+      'Dental': 'D',
+      'Eye': 'E',
+      'Bones': 'B',
+      'Child': 'C',
+      'Women': 'W',
+      'Skin': 'S',
+      'ENT': 'N',
+      'X-Ray': 'X',
+      'Blood Test': 'B',
+      'Urology': 'U'
+    };
+    prefix = prefixMap[department] || department.substring(0, 1).toUpperCase();
+  }
+  
   const sql = `
     SELECT token_number FROM tokens 
     WHERE department = ? AND date(created_at) = ?
@@ -13,10 +44,8 @@ const generateTokenNumber = async (department) => {
   if (lastToken) {
     const parts = lastToken.token_number.split('-');
     const num = parseInt(parts[parts.length - 1]) + 1;
-    const prefix = department.substring(0, 1).toUpperCase();
     return `${prefix}-${String(num).padStart(2, '0')}`;
   }
-  const prefix = department.substring(0, 1).toUpperCase();
   return `${prefix}-01`;
 };
 
@@ -126,7 +155,6 @@ const generateToken = async (req, res, next) => {
     const tokenNumber = await generateTokenNumber(department);
     const roomNumber = departmentInfo.room || `Room ${Math.floor(Math.random() * 20) + 1}`;
     
-    // UPDATED: Added doctor field to INSERT
     const sql = `
       INSERT INTO tokens (
         token_number, patient_name, phone_number, age, department, 
@@ -141,7 +169,7 @@ const generateToken = async (req, res, next) => {
       age || null,
       department,
       roomNumber,
-      doctor || null,  // ADDED: doctor field
+      doctor || null,
       source
     ]);
     
@@ -204,7 +232,6 @@ const getTokenByIdRoute = async (req, res, next) => {
 // Get all tokens - UPDATED to include doctor field
 const getTokens = async (req, res, next) => {
   try {
-    // First, check and auto-complete expired tokens
     await checkAndAutoComplete();
     
     const { limit = 100, offset = 0, status, department, date } = req.query;
@@ -389,7 +416,7 @@ const updateToken = async (req, res, next) => {
       updates.push('room_number = ?');
       params.push(room_number);
     }
-    if (doctor !== undefined) {  // ADDED: doctor field update
+    if (doctor !== undefined) {
       updates.push('doctor = ?');
       params.push(doctor);
     }

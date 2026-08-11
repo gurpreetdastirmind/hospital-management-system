@@ -87,20 +87,20 @@ const initDatabase = () => {
         // Insert default departments if none exist - UPDATED WITH ALL DEPARTMENTS
         db.get(`SELECT COUNT(*) as count FROM departments`, (err, row) => {
           if (row && row.count === 0) {
-            const defaultDepts = [
-              ['General Medicine', 'Room 12', 'G', '🏥', '#4CAF50'],
-              ['Dental', 'Room 21', 'D', '🦷', '#2196F3'],
-              ['Eye', 'Room 18', 'E', '👁️', '#FF9800'],
-              ['Bones', 'Room 31', 'B', '🦴', '#9C27B0'],
-              ['Child', 'Room 26', 'C', '👶', '#E91E63'],
-              ['Women', 'Room 15', 'W', '👩', '#F44336'],
-              // NEW DEPARTMENTS
-              ['Skin', 'Room 41', 'S', '🧴', '#FF6F00'],
-              ['ENT', 'Room 42', 'N', '👂', '#00897B'],
-              ['X-Ray', 'Room 43', 'X', '🩻', '#5D4037'],
-              ['Blood Test', 'Room 44', 'B', '🩸', '#C62828'],
-              ['Urology', 'Room 45', 'U', '🫘', '#4A148C']
-            ];
+           const defaultDepts = [
+  ['General Medicine', 'Room 12', 'G', '🏥', '#4CAF50'],
+  ['Dental', 'Room 21', 'D', '🦷', '#2196F3'],
+  ['Eye', 'Room 18', 'E', '👁️', '#FF9800'],
+  ['Bones', 'Room 31', 'B', '🦴', '#9C27B0'],
+  ['Child', 'Room 26', 'C', '👶', '#E91E63'],
+  ['Women', 'Room 15', 'W', '👩', '#F44336'],
+  // NEW DEPARTMENTS WITH CORRECT PREFIXES
+  ['Skin', 'Room 41', 'S', '🧴', '#FF6F00'],
+  ['ENT', 'Room 42', 'N', '👂', '#00897B'],
+  ['X-Ray', 'Room 43', 'X', '🩻', '#5D4037'],
+  ['Blood Test', 'Room 44', 'B', '🩸', '#C62828'],
+  ['Urology', 'Room 45', 'U', '🫘', '#4A148C']
+];
             
             defaultDepts.forEach(dept => {
               db.run(`
