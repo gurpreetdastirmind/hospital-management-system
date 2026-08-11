@@ -1,17 +1,22 @@
 /* frontend/src/styles/DoctorInfo.css */
 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 .doctor-info-page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: #f0f2f5;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ===== HEADER ===== */
 .doctor-header {
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
   color: white;
-  padding: 20px 20px 28px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  padding: 24px 20px 20px;
   position: relative;
   overflow: hidden;
 }
@@ -19,11 +24,11 @@
 .doctor-header::before {
   content: '';
   position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.1), transparent 70%);
+  top: -60%;
+  right: -30%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.08), transparent 70%);
   border-radius: 50%;
 }
 
@@ -31,11 +36,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   position: relative;
   z-index: 1;
-  flex-wrap: wrap;
-  gap: 10px;
 }
 
 .doctor-brand {
@@ -44,57 +47,43 @@
   gap: 12px;
 }
 
-.doctor-icon {
+.brand-icon {
   font-size: 32px;
-  animation: pulseIcon 3s ease-in-out infinite;
+  animation: pulseIcon 2s ease-in-out infinite;
 }
 
 @keyframes pulseIcon {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.08); }
 }
 
 .doctor-brand h1 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #fff 0%, #a8b5e6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   line-height: 1.2;
 }
 
-.doctor-tagline {
+.doctor-brand p {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.5);
   margin: 0;
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
-}
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-  position: relative;
-  z-index: 1;
 }
 
 .back-btn {
-  padding: 8px 16px;
+  padding: 6px 14px;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   color: white;
   font-size: 12px;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   white-space: nowrap;
 }
 
 .back-btn:hover {
   background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
 }
 
 .back-btn:active {
@@ -103,24 +92,19 @@
 
 /* ===== STATS ===== */
 .doctor-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 8px;
   position: relative;
   z-index: 1;
 }
 
-.stat-card {
-  background: rgba(255, 255, 255, 0.06);
+.stat-item {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
-  padding: 10px 8px;
+  padding: 10px 6px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .stat-number {
@@ -133,61 +117,60 @@
 
 .stat-label {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.5);
   display: block;
-  letter-spacing: 0.3px;
+  margin-top: 2px;
 }
 
-/* ===== CONTROLS ===== */
-.doctor-controls {
-  padding: 16px 16px 12px;
+/* ===== SEARCH SECTION ===== */
+.search-section {
   background: white;
-  border-bottom: 1px solid #e8ecf0;
+  padding: 14px 16px 10px;
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.search-box {
+.search-bar {
   position: relative;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .search-icon {
   position: absolute;
-  left: 14px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 16px;
   opacity: 0.5;
 }
 
-.search-box input {
+.search-bar input {
   width: 100%;
-  padding: 10px 14px 10px 42px;
+  padding: 10px 14px 10px 38px;
   border: 2px solid #e8ecf0;
   border-radius: 10px;
   font-size: 14px;
-  transition: all 0.3s;
   background: #f8fafc;
+  transition: all 0.2s;
   color: #1a2332;
 }
 
-.search-box input::placeholder {
-  color: #a0aec0;
-}
-
-.search-box input:focus {
+.search-bar input:focus {
   outline: none;
   border-color: #667eea;
   background: white;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.08);
 }
 
-.clear-search {
+.search-bar input::placeholder {
+  color: #a0aec0;
+}
+
+.clear-btn {
   position: absolute;
-  right: 12px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -196,213 +179,208 @@
   cursor: pointer;
   color: #999;
   padding: 4px;
-  border-radius: 50%;
-  transition: all 0.2s;
 }
 
-.clear-search:hover {
-  color: #333;
-  background: #f0f0f0;
-}
-
-.department-filter {
+/* ===== FILTER TABS ===== */
+.filter-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  padding: 2px 0;
+  gap: 4px;
 }
 
-.filter-btn {
+.filter-tab {
   padding: 4px 12px;
   border: 2px solid #e8ecf0;
-  border-radius: 16px;
+  border-radius: 14px;
   background: white;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   white-space: nowrap;
   color: #4a5a6e;
 }
 
-.filter-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.filter-btn:active {
+.filter-tab:active {
   transform: scale(0.95);
 }
 
-.filter-btn.active {
+.filter-tab.active {
   border-color: #667eea;
   background: #667eea;
   color: white;
 }
 
-/* ===== DOCTOR CARDS ===== */
-.doctor-cards-grid {
-  padding: 16px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+/* ===== DOCTOR GRID ===== */
+.doctor-grid {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
+/* ===== DOCTOR CARD ===== */
 .doctor-card {
   background: white;
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
-  border-top: 4px solid #667eea;
-}
-
-.doctor-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #667eea;
 }
 
 .doctor-card:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
 
-.doctor-card-header {
-  padding: 14px 16px 12px;
+.doctor-card-main {
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid #f0f4f8;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .doctor-avatar {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 22px;
   flex-shrink: 0;
 }
 
-.doctor-header-info {
+.doctor-info {
   flex: 1;
   min-width: 0;
 }
 
-.doctor-header-info h3 {
-  margin: 0;
+.doctor-info h3 {
   font-size: 15px;
-  color: #1a2332;
   font-weight: 600;
+  color: #1a2332;
+  margin: 0;
   line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.doctor-specialization {
+.doctor-info .specialty {
   font-size: 12px;
   color: #6b7a8f;
   display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.doctor-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.doctor-dept {
+  font-size: 10px;
+  background: #f0f4f8;
+  padding: 1px 8px;
+  border-radius: 10px;
+  color: #4a5a6e;
 }
 
 .doctor-status {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.card-expand-icon {
+  font-size: 22px;
+  font-weight: 300;
+  color: #b0b0b0;
   flex-shrink: 0;
+  width: 28px;
+  text-align: center;
 }
 
-.status-badge {
-  padding: 3px 10px;
-  border-radius: 16px;
-  font-size: 10px;
-  font-weight: 600;
-  color: white;
-  display: inline-block;
-  white-space: nowrap;
+/* ===== DOCTOR CARD DETAILS ===== */
+.doctor-card-details {
+  padding: 0 16px 16px;
+  border-top: 1px solid #f0f4f8;
+  animation: slideDown 0.25s ease;
 }
 
-.doctor-card-body {
-  padding: 12px 16px;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.doctor-details {
+.detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 12px;
-  margin-bottom: 12px;
+  gap: 8px 12px;
+  padding: 12px 0 10px;
 }
 
-.detail-item {
+.detail-block {
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-.detail-icon {
-  font-size: 13px;
-}
-
-.detail-label {
+.detail-block .detail-label {
   font-size: 9px;
   color: #6b7a8f;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
-.detail-value {
-  font-size: 12px;
+.detail-block .detail-value {
+  font-size: 13px;
   font-weight: 500;
   color: #1a2332;
   line-height: 1.3;
 }
 
-/* ===== AVAILABILITY TIMES ===== */
-.availability-times {
+/* ===== TIME SLOTS ===== */
+.time-slots-section {
   background: #f8fafc;
   border-radius: 8px;
   padding: 10px 12px;
   border: 1px solid #e8ecf0;
 }
 
-.availability-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.time-slots-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a2332;
   margin-bottom: 6px;
 }
 
-.availability-icon {
-  font-size: 14px;
-}
-
-.availability-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #1a2332;
-}
-
-.time-slots {
+.time-slots-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.time-slot {
-  padding: 2px 8px;
+.slot {
+  padding: 3px 10px;
   border-radius: 10px;
   font-size: 10px;
   font-weight: 500;
 }
 
-.time-slot.available {
+.slot.available {
   background: #e8f5e9;
   color: #2e7d32;
 }
 
-.time-slot.booked {
+.slot.booked {
   background: #fdeaea;
   color: #c62828;
 }
@@ -412,65 +390,34 @@
   color: #6b7a8f;
 }
 
-/* ===== FOOTER ===== */
-.doctor-card-footer {
-  padding: 10px 16px 14px;
-}
-
-.view-details-btn {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.view-details-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.view-details-btn:active {
-  transform: scale(0.97);
-}
-
-/* ===== FOOTER INFO ===== */
-.doctor-footer {
-  padding: 12px 16px;
-  background: white;
-  border-top: 1px solid #e8ecf0;
-  text-align: center;
-}
-
-.footer-info {
+/* ===== BOTTOM STATS ===== */
+.bottom-stats {
   display: flex;
   justify-content: center;
   gap: 16px;
+  padding: 12px 16px;
+  background: white;
+  border-top: 1px solid #e8ecf0;
   font-size: 12px;
   color: #6b7a8f;
   flex-wrap: wrap;
 }
 
-.footer-info span {
+.bottom-stats span {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-/* ===== LOADING & EMPTY STATES ===== */
+/* ===== LOADING & EMPTY ===== */
 .loading-state,
 .empty-state {
   text-align: center;
   padding: 40px 20px;
   color: #6b7a8f;
-  grid-column: 1 / -1;
 }
 
-.loading-spinner {
+.loader {
   font-size: 32px;
   display: block;
   animation: spin 1s linear infinite;
@@ -488,7 +435,7 @@
   margin-bottom: 8px;
 }
 
-.empty-sub {
+.empty-state span:last-child {
   font-size: 12px;
   color: #b0b0b0;
 }
@@ -496,347 +443,343 @@
 /* ===== RESPONSIVE ===== */
 
 /* Tablet */
-@media (min-width: 481px) and (max-width: 768px) {
+@media (min-width: 768px) {
   .doctor-header {
-    padding: 20px 24px 28px;
+    padding: 32px 40px 28px;
   }
-  
+
   .doctor-brand h1 {
-    font-size: 24px;
+    font-size: 28px;
   }
-  
+
+  .brand-icon {
+    font-size: 40px;
+  }
+
   .doctor-stats {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  
-  .doctor-cards-grid {
-    grid-template-columns: 1fr 1fr;
-    padding: 20px;
     gap: 16px;
   }
-  
-  .doctor-controls {
-    padding: 16px 24px;
+
+  .stat-item {
+    padding: 14px 12px;
+  }
+
+  .stat-number {
+    font-size: 26px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
+  .search-section {
+    padding: 20px 40px 14px;
+  }
+
+  .search-bar input {
+    font-size: 15px;
+    padding: 12px 16px 12px 44px;
+  }
+
+  .search-icon {
+    font-size: 18px;
+    left: 14px;
+  }
+
+  .filter-tab {
+    font-size: 12px;
+    padding: 6px 16px;
+  }
+
+  .doctor-grid {
+    padding: 20px 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .doctor-card-main {
+    padding: 16px 20px;
+  }
+
+  .doctor-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 26px;
+  }
+
+  .doctor-info h3 {
+    font-size: 16px;
+  }
+
+  .bottom-stats {
+    padding: 16px 40px;
+    font-size: 14px;
+    gap: 32px;
   }
 }
 
 /* Desktop */
-@media (min-width: 769px) {
+@media (min-width: 1024px) {
   .doctor-header {
-    padding: 32px 48px 40px;
+    padding: 40px 60px 32px;
   }
-  
+
   .doctor-brand h1 {
     font-size: 32px;
   }
-  
-  .doctor-icon {
+
+  .brand-icon {
     font-size: 48px;
   }
-  
-  .doctor-tagline {
-    font-size: 16px;
-  }
-  
+
   .doctor-stats {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: 20px;
   }
-  
+
+  .stat-item {
+    padding: 16px 20px;
+  }
+
   .stat-number {
-    font-size: 32px;
+    font-size: 30px;
   }
-  
-  .stat-label {
-    font-size: 14px;
+
+  .search-section {
+    padding: 24px 60px 16px;
   }
-  
-  .doctor-controls {
-    padding: 24px 48px;
+
+  .doctor-grid {
+    padding: 24px 60px;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
   }
-  
-  .doctor-cards-grid {
-    padding: 32px 48px;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 24px;
+
+  .doctor-card-main {
+    padding: 18px 24px;
   }
-  
-  .doctor-card-header h3 {
+
+  .doctor-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+  }
+
+  .doctor-info h3 {
     font-size: 18px;
   }
-  
-  .doctor-card {
-    border-radius: 16px;
+
+  .detail-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
   }
-  
-  .filter-btn {
-    font-size: 13px;
-    padding: 8px 20px;
-  }
-  
-  .footer-info {
-    font-size: 14px;
-    gap: 32px;
-  }
-  
-  .search-box input {
-    font-size: 16px;
-    padding: 14px 18px 14px 50px;
-  }
-  
-  .search-icon {
-    font-size: 20px;
-    left: 18px;
+
+  .bottom-stats {
+    padding: 20px 60px;
   }
 }
 
 /* Small Mobile (320px - 480px) */
 @media (max-width: 480px) {
   .doctor-header {
-    padding: 14px 14px 20px;
+    padding: 16px 14px 16px;
   }
-  
-  .doctor-header-top {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  
-  .doctor-brand {
-    gap: 10px;
-  }
-  
-  .doctor-icon {
-    font-size: 28px;
-  }
-  
+
   .doctor-brand h1 {
-    font-size: 18px;
+    font-size: 17px;
   }
-  
-  .doctor-tagline {
-    font-size: 11px;
+
+  .brand-icon {
+    font-size: 26px;
   }
-  
-  .header-actions {
-    width: 100%;
+
+  .doctor-brand p {
+    font-size: 10px;
   }
-  
+
   .back-btn {
-    width: 100%;
-    text-align: center;
-    justify-content: center;
-    padding: 10px 16px;
-    font-size: 13px;
+    font-size: 11px;
+    padding: 5px 12px;
   }
-  
+
   .doctor-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-  }
-  
-  .stat-card {
-    padding: 8px 6px;
-    border-radius: 8px;
-  }
-  
-  .stat-number {
-    font-size: 18px;
-  }
-  
-  .stat-label {
-    font-size: 9px;
-  }
-  
-  .doctor-controls {
-    padding: 12px 12px 10px;
-  }
-  
-  .search-box {
-    margin-bottom: 10px;
-  }
-  
-  .search-box input {
-    padding: 8px 12px 8px 36px;
-    font-size: 13px;
-    border-radius: 8px;
-  }
-  
-  .search-icon {
-    font-size: 14px;
-    left: 12px;
-  }
-  
-  .clear-search {
-    right: 10px;
-    font-size: 12px;
-  }
-  
-  .department-filter {
     gap: 4px;
   }
-  
-  .filter-btn {
-    font-size: 10px;
-    padding: 3px 10px;
-    border-radius: 14px;
+
+  .stat-item {
+    padding: 8px 4px;
+    border-radius: 8px;
   }
-  
-  .doctor-cards-grid {
-    padding: 12px;
-    gap: 12px;
+
+  .stat-number {
+    font-size: 16px;
   }
-  
-  .doctor-card {
-    border-radius: 12px;
-    border-top-width: 3px;
-  }
-  
-  .doctor-card-header {
-    padding: 12px 12px 10px;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  
-  .doctor-avatar {
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-  }
-  
-  .doctor-header-info h3 {
-    font-size: 14px;
-  }
-  
-  .doctor-specialization {
-    font-size: 11px;
-  }
-  
-  .status-badge {
-    font-size: 9px;
-    padding: 2px 8px;
-  }
-  
-  .doctor-card-body {
-    padding: 10px 12px;
-  }
-  
-  .doctor-details {
-    grid-template-columns: 1fr 1fr;
-    gap: 4px 8px;
-    margin-bottom: 10px;
-  }
-  
-  .detail-value {
-    font-size: 11px;
-  }
-  
-  .detail-label {
+
+  .stat-label {
     font-size: 8px;
   }
-  
-  .detail-icon {
-    font-size: 12px;
+
+  .search-section {
+    padding: 10px 12px 8px;
   }
-  
-  .availability-times {
+
+  .search-bar {
+    margin-bottom: 8px;
+  }
+
+  .search-bar input {
+    font-size: 13px;
+    padding: 8px 12px 8px 34px;
+    border-radius: 8px;
+  }
+
+  .search-icon {
+    font-size: 14px;
+    left: 10px;
+  }
+
+  .clear-btn {
+    font-size: 12px;
+    right: 8px;
+  }
+
+  .filter-tab {
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+
+  .doctor-grid {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .doctor-card {
+    border-left-width: 3px;
+    border-radius: 10px;
+  }
+
+  .doctor-card-main {
+    padding: 12px 12px;
+    gap: 10px;
+  }
+
+  .doctor-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .doctor-info h3 {
+    font-size: 13px;
+  }
+
+  .doctor-info .specialty {
+    font-size: 11px;
+  }
+
+  .doctor-meta {
+    gap: 4px;
+  }
+
+  .doctor-dept {
+    font-size: 9px;
+    padding: 0 6px;
+  }
+
+  .doctor-status {
+    font-size: 10px;
+  }
+
+  .card-expand-icon {
+    font-size: 18px;
+    width: 22px;
+  }
+
+  .doctor-card-details {
+    padding: 0 12px 12px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 8px;
+    padding: 8px 0 6px;
+  }
+
+  .detail-block .detail-label {
+    font-size: 8px;
+  }
+
+  .detail-block .detail-value {
+    font-size: 11px;
+  }
+
+  .time-slots-section {
     padding: 8px 10px;
   }
-  
-  .time-slots {
-    gap: 3px;
+
+  .time-slots-header {
+    font-size: 11px;
   }
-  
-  .time-slot {
+
+  .slot {
     font-size: 9px;
     padding: 2px 7px;
   }
-  
-  .doctor-card-footer {
-    padding: 8px 12px 12px;
-  }
-  
-  .view-details-btn {
-    font-size: 12px;
-    padding: 8px;
-  }
-  
-  .doctor-footer {
+
+  .bottom-stats {
     padding: 10px 12px;
-  }
-  
-  .footer-info {
-    font-size: 11px;
+    font-size: 10px;
     gap: 10px;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .loading-state,
-  .empty-state {
-    padding: 30px 16px;
-  }
-  
-  .loading-spinner {
-    font-size: 28px;
-  }
-  
-  .empty-icon {
-    font-size: 32px;
   }
 }
 
 /* Extra Small (below 360px) */
 @media (max-width: 360px) {
   .doctor-brand h1 {
-    font-size: 16px;
+    font-size: 15px;
   }
-  
-  .doctor-icon {
-    font-size: 24px;
-  }
-  
-  .doctor-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
+
   .stat-number {
+    font-size: 14px;
+  }
+
+  .doctor-avatar {
+    width: 32px;
+    height: 32px;
     font-size: 16px;
   }
-  
-  .doctor-details {
+
+  .doctor-info h3 {
+    font-size: 12px;
+  }
+
+  .doctor-grid {
+    gap: 8px;
+  }
+
+  .doctor-card-main {
+    padding: 10px 10px;
+    gap: 8px;
+  }
+
+  .detail-grid {
     grid-template-columns: 1fr;
-  }
-  
-  .filter-btn {
-    font-size: 9px;
-    padding: 2px 8px;
-  }
-  
-  .doctor-card-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .doctor-status {
-    align-self: flex-start;
   }
 }
 
-/* Touch-friendly improvements */
+/* Touch-friendly */
 @media (hover: none) {
-  .filter-btn:hover,
   .back-btn:hover,
-  .view-details-btn:hover {
+  .filter-tab:hover {
     transform: none;
   }
-  
-  .filter-btn:active,
+
   .back-btn:active,
-  .view-details-btn:active {
+  .filter-tab:active {
     transform: scale(0.95);
   }
-  
+
   .doctor-card:active {
     transform: scale(0.98);
   }
