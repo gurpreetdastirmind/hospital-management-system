@@ -7,6 +7,11 @@ import childImg from '../image/child.png';
 import eyeImg from '../image/eye1.png';
 import generalImg from '../image/general.png';
 import womenImg from '../image/women1.png';
+import entImg from '../image/ent.png';
+import skinImg from '../image/skin.png';
+import uroImg from '../image/urologist.png';
+import bloodImg from '../image/blood.png';
+import xrayImg from '../image/XRAY.png';
 import api from '../api';
 
 const DepartmentScreen = ({ onNext, onBack, department }) => {
@@ -28,7 +33,11 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     'dental': 'Dental',
     'eye': 'Eye',
     'bones': 'Bones',
-    'child': 'Child',
+    'skin': 'Skin',
+    'ent': 'ENT',
+    'xray': 'X-Ray',
+    'bloodtest': 'Blood Test',
+    'urology': 'Urology',
     'women': 'Women'
   };
 
@@ -38,7 +47,11 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     'dental': 'दंत',
     'eye': 'नेत्र',
     'bones': 'हड्डी',
-    'child': 'बाल',
+    'skin': 'त्वचा',
+    'ent': 'ईएनटी',
+    'xray': 'एक्स-रे',
+    'bloodtest': 'रक्त परीक्षण',
+    'urology': 'यूरोलॉजी',
     'women': 'महिला'
   };
 
@@ -80,13 +93,49 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       bgColor: '#F3E5F5'
     },
     { 
-      id: 'child', 
-      englishName: 'Child',
-      hindiName: 'बाल',
-      imageSrc: childImg,
-      fallbackText: '👶',
-      color: '#E91E63',
-      bgColor: '#FCE4EC'
+      id: 'skin', 
+      englishName: 'Skin',
+      hindiName: 'त्वचा',
+      imageSrc: skinImg, // You'll need to add a skin image
+      fallbackText: '🧴',
+      color: '#FF6F00',
+      bgColor: '#FFF8E1'
+    },
+    { 
+      id: 'ent', 
+      englishName: 'ENT',
+      hindiName: 'ईएनटी',
+      imageSrc: entImg, // You'll need to add an ENT image
+      fallbackText: '👂',
+      color: '#00897B',
+      bgColor: '#E0F2F1'
+    },
+    { 
+      id: 'xray', 
+      englishName: 'X-Ray',
+      hindiName: 'एक्स-रे',
+      imageSrc: xrayImg, // You'll need to add an X-Ray image
+      fallbackText: '🩻',
+      color: '#5D4037',
+      bgColor: '#EFEBE9'
+    },
+    { 
+      id: 'bloodtest', 
+      englishName: 'Blood Test',
+      hindiName: 'रक्त परीक्षण',
+      imageSrc: bloodImg, // You'll need to add a Blood Test image
+      fallbackText: '🩸',
+      color: '#C62828',
+      bgColor: '#FFEBEE'
+    },
+    { 
+      id: 'urology', 
+      englishName: 'Urology',
+      hindiName: 'यूरोलॉजी',
+      imageSrc: uroImg, // You'll need to add a Urology image
+      fallbackText: '🫘',
+      color: '#4A148C',
+      bgColor: '#F3E5F5'
     },
     { 
       id: 'women', 
@@ -145,7 +194,6 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       setTimeout(() => {
         setIsSpeaking(true);
         const utterance = new SpeechSynthesisUtterance(text);
-        // Use the appropriate language for speech
         utterance.lang = languageVoiceMap[language] || 'en-US';
         utterance.rate = 0.9;
         utterance.pitch = 1;
@@ -257,7 +305,6 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       departmentName: dept.englishName
     }));
     
-    // Speak the department name in the selected language
     speakDepartmentName(dept);
   };
 
@@ -301,6 +348,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     }
     
     const newLang = language === 'EN' ? 'HI' : 'EN';
+
     
     changeLanguage(newLang);
     
@@ -311,14 +359,6 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
 
   const handleImageError = (deptId) => {
     setImageErrors(prev => ({ ...prev, [deptId]: true }));
-  };
-
-  // Get the instruction text in the current language
-  const getInstructionText = () => {
-    if (language === 'HI') {
-      return '"आप किस विभाग में जाना चाहते हैं? चित्र पर टैप करें।"';
-    }
-    return `"${translations.departmentInstruction}"`;
   };
 
   // Get the "Hear Again" button text
@@ -382,13 +422,17 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
                   {hasError ? (
                     <span style={{ fontSize: '36px' }}>{dept.fallbackText}</span>
                   ) : (
-                    <img 
-                      src={dept.imageSrc} 
-                      alt={dept.englishName}
-                      className="dept-img"
-                      onError={() => handleImageError(dept.id)}
-                      loading="lazy"
-                    />
+                    dept.imageSrc ? (
+                      <img 
+                        src={dept.imageSrc} 
+                        alt={dept.englishName}
+                        className="dept-img"
+                        onError={() => handleImageError(dept.id)}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span style={{ fontSize: '36px' }}>{dept.fallbackText}</span>
+                    )
                   )}
                 </div>
                 <span className="dept-name">{displayName}</span>
