@@ -51,17 +51,21 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
         }
         if (patientData.department) {
             const deptMap = {
-                'general': 'General',
+                'general': 'General Medicine',
                 'dental': 'Dental',
                 'eye': 'Eye',
                 'bones': 'Bones',
-                'child': 'Child',
+                'skin': 'Skin',
+                'ent': 'ENT',
+                'xray': 'X-Ray',
+                'bloodtest': 'Blood Test',
+                'urology': 'Urology',
                 'women': 'Women'
             };
             const mapped = deptMap[patientData.department.toLowerCase()];
             if (mapped) return mapped;
         }
-        return 'General';
+        return 'General Medicine';
     };
 
     const [token] = useState(tokenData?.token || generateToken());
@@ -302,17 +306,26 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
             
             let deptName = departmentName;
             if (!deptName || deptName === '') {
-                deptName = tokenData?.departmentName || department || patientData.departmentName || 'General';
+                deptName = tokenData?.departmentName || department || patientData.departmentName || 'General Medicine';
             }
             
-            const validDepartments = ['General', 'Dental', 'Eye', 'Bones', 'Child', 'Women'];
+            const validDepartments = [
+                'General Medicine', 'Dental', 'Eye', 'Bones', 'Child', 'Women',
+                'Skin', 'ENT', 'X-Ray', 'Blood Test', 'Urology'
+            ];
+            
             const hindiToEnglish = {
-                'सामान्य': 'General',
+                'सामान्य': 'General Medicine',
                 'दंत': 'Dental',
                 'नेत्र': 'Eye',
                 'हड्डी': 'Bones',
                 'बाल': 'Child',
-                'महिला': 'Women'
+                'महिला': 'Women',
+                'त्वचा': 'Skin',
+                'ईएनटी': 'ENT',
+                'एक्स-रे': 'X-Ray',
+                'रक्त परीक्षण': 'Blood Test',
+                'यूरोलॉजी': 'Urology'
             };
             
             if (hindiToEnglish[deptName]) {
@@ -320,11 +333,15 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
             }
             
             const deptIdMap = {
-                'general': 'General',
+                'general': 'General Medicine',
                 'dental': 'Dental',
                 'eye': 'Eye',
                 'bones': 'Bones',
-                'child': 'Child',
+                'skin': 'Skin',
+                'ent': 'ENT',
+                'xray': 'X-Ray',
+                'bloodtest': 'Blood Test',
+                'urology': 'Urology',
                 'women': 'Women'
             };
             
@@ -333,7 +350,7 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
             }
             
             if (!validDepartments.includes(deptName)) {
-                deptName = 'General';
+                deptName = 'General Medicine';
             }
             
             const saveData = {
@@ -391,9 +408,8 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
         }
     };
 
-    // Handle Done button for Quick Token flow - FIXED: Don't try to save again
+    // Handle Done button for Quick Token flow
     const handleQuickTokenDone = () => {
-        // Just complete the flow without any API calls
         setHasCompleted(true);
         speakText(translations.registrationComplete);
         
@@ -404,7 +420,6 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
             completed: true 
         });
         
-        // Clear localStorage after showing completion
         localStorage.removeItem('patientData');
         
         let message = `✅ Registration Complete! Your token is ${token} for ${departmentName} department.`;
@@ -651,7 +666,6 @@ const TokenScreen = ({ onNext, onBack, tokenData, department }) => {
                         {translations.back}
                     </button>
                     
-                    {/* Show different button based on flow */}
                     {isQuickToken ? (
                         <button
                             className="nav-btn submit-btn"

@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { LanguageContext } from '../App.jsx';
 import boneImg from '../image/bones.png';
 import dentalImg from '../image/teeth1.png';
-import childImg from '../image/child.png';
 import eyeImg from '../image/eye1.png';
 import generalImg from '../image/general.png';
 import womenImg from '../image/women1.png';
@@ -29,7 +28,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
 
   // English name mapping for backend storage
   const departmentEnglishMap = {
-    'general': 'General',
+    'general': 'General Medicine',
     'dental': 'Dental',
     'eye': 'Eye',
     'bones': 'Bones',
@@ -58,7 +57,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
   const departments = [
     { 
       id: 'general', 
-      englishName: 'General',
+      englishName: 'General Medicine',
       hindiName: 'सामान्य',
       imageSrc: generalImg,
       fallbackText: '🏥',
@@ -96,7 +95,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       id: 'skin', 
       englishName: 'Skin',
       hindiName: 'त्वचा',
-      imageSrc: skinImg, // You'll need to add a skin image
+      imageSrc: skinImg,
       fallbackText: '🧴',
       color: '#FF6F00',
       bgColor: '#FFF8E1'
@@ -105,7 +104,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       id: 'ent', 
       englishName: 'ENT',
       hindiName: 'ईएनटी',
-      imageSrc: entImg, // You'll need to add an ENT image
+      imageSrc: entImg,
       fallbackText: '👂',
       color: '#00897B',
       bgColor: '#E0F2F1'
@@ -114,7 +113,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       id: 'xray', 
       englishName: 'X-Ray',
       hindiName: 'एक्स-रे',
-      imageSrc: xrayImg, // You'll need to add an X-Ray image
+      imageSrc: xrayImg,
       fallbackText: '🩻',
       color: '#5D4037',
       bgColor: '#EFEBE9'
@@ -123,7 +122,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       id: 'bloodtest', 
       englishName: 'Blood Test',
       hindiName: 'रक्त परीक्षण',
-      imageSrc: bloodImg, // You'll need to add a Blood Test image
+      imageSrc: bloodImg,
       fallbackText: '🩸',
       color: '#C62828',
       bgColor: '#FFEBEE'
@@ -132,7 +131,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
       id: 'urology', 
       englishName: 'Urology',
       hindiName: 'यूरोलॉजी',
-      imageSrc: uroImg, // You'll need to add a Urology image
+      imageSrc: uroImg,
       fallbackText: '🫘',
       color: '#4A148C',
       bgColor: '#F3E5F5'
@@ -348,7 +347,7 @@ const DepartmentScreen = ({ onNext, onBack, department }) => {
     }
     
     const newLang = language === 'EN' ? 'HI' : 'EN';
-
+    const langName = newLang === 'EN' ? translations.english : translations.hindi;
     
     changeLanguage(newLang);
     
