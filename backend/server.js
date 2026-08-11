@@ -10,6 +10,7 @@ const departmentRoutes = require('./routes/departments');
 const tokenRoutes = require('./routes/tokens');
 const { initDatabase } = require('./database');
 const staffRoutes = require('./routes/staff');
+const doctorRoutes = require('./routes/doctors');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -59,7 +60,7 @@ app.use('/api/patients', patientRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/tokens', tokenRoutes);
 app.use('/api/staff', staffRoutes);
-
+app.use('/api/doctors', doctorRoutes);
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
