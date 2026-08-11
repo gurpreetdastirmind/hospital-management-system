@@ -6,7 +6,7 @@ import dentalImg from '../image/teeth1.png';
 import childImg from '../image/child.png';
 import eyeImg from '../image/eye1.png';
 import generalImg from '../image/general.png';
-import womenImg from '../image/women2.png';
+import womenImg from '../image/women1.png';
 import api from '../api';
 
 const DepartmentScreen = ({ onNext, onBack, department }) => {
