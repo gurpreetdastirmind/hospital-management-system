@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import LiveQueue from './LiveQueue';
 import TokenRecords from './TokenRecords';
 import DepartmentSetup from './DepartmentSetup';
+import DoctorManagement from './DoctorManagement';
 import '../../styles/StaffApp.css';
 import api from '../../api';
 
@@ -96,6 +97,13 @@ const StaffApp = () => {
             <span className="sidebar-icon">⚙️</span>
             Departments
           </button>
+          <button 
+            className={`sidebar-btn ${activeTab === 'doctors' ? 'active' : ''}`}
+            onClick={() => setActiveTab('doctors')}
+          >
+            <span className="sidebar-icon">👨‍⚕️</span>
+            Doctors
+          </button>
         </nav>
         <div className="sidebar-footer">
           <div className="sidebar-user">
@@ -142,6 +150,15 @@ const StaffApp = () => {
           )}
           {activeTab === 'departments' && (
             <DepartmentSetup 
+              departments={departments}
+              onUpdate={() => {
+                fetchDepartments();
+                fetchTokens();
+              }}
+            />
+          )}
+          {activeTab === 'doctors' && (
+            <DoctorManagement 
               departments={departments}
               onUpdate={() => {
                 fetchDepartments();
